@@ -158,6 +158,56 @@ export async function registerRoutes(
     }
   });
 
+  /**
+   * POST /api/checkout/create
+   * Create a Whop checkout session
+   */
+  app.post('/api/checkout/create', whopAuthMiddleware, async (req: Request, res: Response) => {
+    if (!req.user || !req.whopUserId) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+
+    const { name, price } = req.body;
+    if (!name || !price) {
+      res.status(400).json({ error: 'Name and price are required' });
+      return;
+    }
+
+    const companyId = getWhopCompanyId();
+    if (!companyId) {
+      console.error('[Routes] Checkout failed: WHOP_COMPANY_ID not configured');
+      res.status(500).json({ error: 'Payments not configured' });
+      return;
+    }
+
+    try {
+      const whopClient = getWhopClient();
+      console.log(`[Checkout] Creating session for ${name} ($${price})`);
+
+      const checkoutConfig = await whopClient.checkoutConfigurations.create({
+        company_id: companyId,
+        plan: {
+          initial_price: Number(price),
+          plan_type: "one_time",
+          currency: "usd",
+          company_id: companyId
+        },
+        metadata: {
+          product_name: name,
+          user_id: req.whopUserId,
+          source: "symptom_tool"
+        }
+      });
+
+      console.log('[Checkout] Session created:', checkoutConfig.id);
+      res.json({ sessionId: checkoutConfig.id });
+    } catch (error) {
+      console.error('[Routes] Create checkout error:', error);
+      res.status(500).json({ error: 'Failed to create checkout session' });
+    }
+  });
+
   // ============================================
   // Health Check
   // ============================================
