@@ -186,12 +186,12 @@ export async function registerRoutes(
       console.log(`[Checkout] Creating session for ${name} ($${price})`);
 
       const checkoutConfig = await whopClient.checkoutConfigurations.create({
-        company_id: companyId,
         plan: {
           initial_price: Number(price),
           plan_type: "one_time",
-          currency: "usd"
-        } as any, // Cast to any to avoid TS error about missing company_id which causes runtime error
+          currency: "usd",
+          company_id: companyId
+        } as any,
         metadata: {
           product_name: name,
           user_id: req.whopUserId,
