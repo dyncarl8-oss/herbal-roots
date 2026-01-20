@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Heart, PlayCircle, BookOpen, Clock, ArrowRight, Loader2, Plus, RefreshCw } from "lucide-react";
+import { MessageCircle, Heart, PlayCircle, BookOpen, Clock, ArrowRight, Loader2, Plus, RefreshCw, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { useUser } from "@/context/UserContext";
 import {
@@ -61,11 +61,27 @@ export default function Community() {
       const res = await fetch("/api/community/posts");
       if (res.ok) {
         setPosts(await res.json());
+        if (isManual) {
+          toast({
+            title: "Feed Updated",
+            description: "Fresh rituals have arrived from the Circle.",
+          });
+        }
+      } else {
+        throw new Error("Failed to fetch");
       }
     } catch (err) {
       console.error("Failed to fetch posts", err);
+      if (isManual) {
+        toast({
+          title: "Refresh Failed",
+          description: "Could not sync with the Circle. Check your connection.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
+      // Ensure refreshing is reset even on errors
       setRefreshing(false);
     }
   };
@@ -181,6 +197,13 @@ export default function Community() {
 
         <div className="relative z-10 space-y-4 max-w-2xl px-4">
           <Badge className="bg-accent text-accent-foreground border-none hover:bg-accent/80 mb-2">Member Sanctuary</Badge>
+          <div className="flex items-center justify-center gap-4 mb-2">
+            <Link href="/dashboard">
+              <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10 rounded-full h-8">
+                <ArrowLeft className="w-4 h-4 mr-1" /> Dashboard
+              </Button>
+            </Link>
+          </div>
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-white">The Steep Circle</h1>
           <p className="text-white/80 text-lg font-light">
             Share your daily rituals, learn from master herbalists, and grow together in the Caribbean wellness tradition.
@@ -276,8 +299,8 @@ export default function Community() {
                           <button
                             onClick={() => handleToggleLike(post._id)}
                             className={`flex items-center gap-1.5 text-xs transition-all ring-offset-background active:scale-90 ${user && post.likes.includes(user.id)
-                                ? 'text-accent-foreground font-bold'
-                                : 'text-muted-foreground hover:text-accent-foreground'
+                              ? 'text-accent-foreground font-bold'
+                              : 'text-muted-foreground hover:text-accent-foreground'
                               }`}
                           >
                             <Heart className={`w-4 h-4 ${user && post.likes.includes(user.id) ? 'fill-accent-foreground' : ''}`} />
@@ -396,20 +419,76 @@ export default function Community() {
               <CardTitle className="font-serif text-xl">Quick Resources</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 transition-colors cursor-pointer group border border-transparent hover:border-primary/10">
-                <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center text-accent-foreground">
-                  <BookOpen size={16} />
+              <Link href="/masterclasses">
+                <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 transition-colors cursor-pointer group border border-transparent hover:border-primary/10">
+                  <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center text-accent-foreground">
+                    <BookOpen size={16} />
+                  </div>
+                  <span className="text-sm font-medium flex-1">Apothecary Guide</span>
+                  <ArrowRight size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <span className="text-sm font-medium flex-1">Apothecary Guide</span>
-                <ArrowRight size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 transition-colors cursor-pointer group border border-transparent hover:border-primary/10">
-                <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-secondary-foreground">
-                  <Clock size={16} />
-                </div>
-                <span className="text-sm font-medium flex-1">Ritual Timers</span>
-                <ArrowRight size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
+              </Link>
+
+              <Dialog>
+                <DialogTrigger asChild>
+                  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-primary/5 transition-colors cursor-pointer group border border-transparent hover:border-primary/10">
+                    <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-secondary-foreground">
+                      <Clock size={16} />
+                    </div>
+                    <span className="text-sm font-medium flex-1">Ritual Timers</span>
+                    <ArrowRight size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md rounded-3xl border-none shadow-2xl bg-white/95 backdrop-blur-xl">
+                  <DialogHeader>
+                    <DialogTitle className="font-serif text-2xl text-primary font-bold">Nature's Clock</DialogTitle>
+                    <CardDescription>Ancestral steeping times for maximum potency.</CardDescription>
+                  </DialogHeader>
+                  <div className="grid grid-cols-1 gap-4 py-4">
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-primary/5 border border-primary/10 group hover:bg-primary/10 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-primary shadow-sm">
+                          <span className="font-bold">10</span>
+                        </div>
+                        <div>
+                          <p className="font-bold text-primary">Gentle Steep</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Leaves & Flowers</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline" className="rounded-full border-primary/20 text-primary">Start</Button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-secondary/10 border border-secondary/20 group hover:bg-secondary/20 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-secondary shadow-sm">
+                          <span className="font-bold">20</span>
+                        </div>
+                        <div>
+                          <p className="font-bold text-secondary">Balanced Brew</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Seeds & Berries</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline" className="rounded-full border-secondary/30 text-secondary">Start</Button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-accent/10 border border-accent/20 group hover:bg-accent/20 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-accent-foreground shadow-sm">
+                          <span className="font-bold">30</span>
+                        </div>
+                        <div>
+                          <p className="font-bold text-accent-foreground">Deep Decoction</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Roots & Bark</p>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline" className="rounded-full border-accent/30 text-accent-foreground">Start</Button>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <p className="text-[10px] text-center w-full text-muted-foreground italic">"Patience is the secret ingredient in every cure."</p>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
         </div>

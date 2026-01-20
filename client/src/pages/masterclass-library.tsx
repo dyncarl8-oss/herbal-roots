@@ -4,7 +4,7 @@ import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PlayCircle, Clock, BookOpen, ArrowRight, Loader2, Sparkles, Search } from "lucide-react";
+import { PlayCircle, Clock, BookOpen, ArrowRight, Loader2, Sparkles, Search, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 interface Masterclass {
@@ -57,6 +57,13 @@ export default function MasterclassLibrary() {
         <div className="space-y-12 pb-20 animate-in fade-in duration-700">
             {/* Header */}
             <div className="text-center max-w-3xl mx-auto space-y-4">
+                <div className="flex justify-center mb-6">
+                    <Link href="/dashboard">
+                        <Button variant="ghost" size="sm" className="text-primary/60 hover:text-primary hover:bg-primary/5 rounded-full h-8 px-4">
+                            <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
+                        </Button>
+                    </Link>
+                </div>
                 <Badge variant="outline" className="border-primary/20 text-primary tracking-widest uppercase mb-2">
                     The Steep Circle
                 </Badge>
