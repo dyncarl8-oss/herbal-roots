@@ -11,7 +11,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -49,10 +49,24 @@ function getRoleLabel(accessLevel: string): string {
 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { user, loading } = useUser();
-  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(user?.accessLevel === 'admin');
+
+  // Sync isAdminMode if user takes a while to load
+  useEffect(() => {
+    if (user?.accessLevel === 'admin') {
+      setIsAdminMode(true);
+    }
+  }, [user]);
+
+  // Handle Initial Landing and Perspective Redirects
+  useEffect(() => {
+    if (user?.accessLevel === 'admin' && isAdminMode && location === "/") {
+      setLocation("/admin");
+    }
+  }, [user, location, isAdminMode, setLocation]);
 
   const memberNavItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -63,12 +77,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const adminNavItems = [
     { href: "/admin", label: "Command Center", icon: ShieldCheck },
-    { href: "/community", label: "Moderation", icon: Users },
-    { href: "/affiliate", label: "Member Audit", icon: DollarSign },
-    { href: "/", label: "Exit to Member", icon: LayoutDashboard },
+    { href: "/admin/moderation", label: "Moderation", icon: Users },
+    { href: "/admin/members", label: "Member Audit", icon: DollarSign },
   ];
 
   const navItems = isAdminMode ? adminNavItems : memberNavItems;
+
+  const handleToggleMode = () => {
+    const nextMode = !isAdminMode;
+    setIsAdminMode(nextMode);
+
+    // Proactive navigation
+    if (nextMode) {
+      setLocation("/admin");
+    } else {
+      setLocation("/");
+    }
+  };
 
   // User profile component for sidebar and mobile
   const UserProfile = ({ compact = false }: { compact?: boolean }) => {
@@ -140,11 +165,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   ? "bg-primary text-primary-foreground shadow-md"
                   : "bg-transparent border-primary/10 text-primary hover:bg-primary/5"
               )}
-              onClick={() => setIsAdminMode(!isAdminMode)}
+              onClick={handleToggleMode}
             >
               <ShieldCheck size={14} className={isAdminMode ? "animate-pulse" : ""} />
               <span className="text-[10px] font-bold uppercase tracking-wider">
-                {isAdminMode ? "Command Mode" : "Switch to Admin"}
+                {isAdminMode ? "Act as Member" : "Back to Admin"}
               </span>
             </Button>
           </div>
