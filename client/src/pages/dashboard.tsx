@@ -95,8 +95,9 @@ export default function DashboardHome() {
               </Button>
             </Link>
             <Link href="/community">
-              <Button size="lg" variant="outline" className="bg-transparent text-white border-white hover:bg-white/10 hover:text-white">
+              <Button size="lg" className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-lg border-none">
                 Enter The Circle
+                <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
           </div>
@@ -202,7 +203,7 @@ export default function DashboardHome() {
                 </div>
               )}
             </div>
-            <Link href="/symptom-tool" className="block mt-6">
+            <Link href="/symptom-tool" className="block mt-auto pt-6">
               <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md h-12">
                 Take a New Assessment
               </Button>
@@ -216,28 +217,33 @@ export default function DashboardHome() {
             <CardTitle className="font-serif text-2xl text-primary">From The Steep Circle</CardTitle>
             <CardDescription>Latest masterclasses and guides</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {[
-              { title: "Mastering Cold Brew Teas", type: "Video Lesson", time: "15 min" },
-              { title: "The History of Hibiscus", type: "Article", time: "5 min read" },
-              { title: "Gut Health 101", type: "Masterclass", time: "45 min" }
-            ].map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/50 border border-white/40 hover:bg-white/80 transition-colors group cursor-pointer">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent-foreground group-hover:scale-110 transition-transform">
-                    <PlayCircle size={18} />
+          <CardContent className="flex flex-col h-[400px]">
+            <div className="flex-grow overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+              {[
+                { id: "cold-brew-teas", title: "Mastering Cold Brew Teas", type: "Video Lesson", time: "15 min" },
+                { id: "history-of-hibiscus", title: "The History of Hibiscus", type: "Article", time: "5 min read" },
+                { id: "gut-health-101", title: "Gut Health 101", type: "Masterclass", time: "45 min" }
+              ].map((item, i) => (
+                <Link key={i} href={`/masterclass/${item.id}`} className="block">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-white/50 border border-white/40 hover:bg-white/80 transition-colors group cursor-pointer">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent-foreground group-hover:scale-110 transition-transform">
+                        <PlayCircle size={18} />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-foreground">{item.title}</h4>
+                        <p className="text-xs text-muted-foreground">{item.type}</p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-muted-foreground bg-white/50 px-2 py-1 rounded-full">{item.time}</span>
                   </div>
-                  <div>
-                    <h4 className="font-medium text-foreground">{item.title}</h4>
-                    <p className="text-xs text-muted-foreground">{item.type}</p>
-                  </div>
-                </div>
-                <span className="text-xs text-muted-foreground bg-white/50 px-2 py-1 rounded-full">{item.time}</span>
-              </div>
-            ))}
-            <Link href="/community">
-              <Button variant="ghost" className="w-full mt-2 text-primary hover:text-primary/80 hover:bg-primary/5">
-                View all content
+                </Link>
+              ))}
+            </div>
+            <Link href="/masterclasses" className="block mt-auto pt-6">
+              <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md h-12">
+                View All Content
+                <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
           </CardContent>

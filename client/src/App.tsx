@@ -27,16 +27,20 @@ function getBasePath(): string {
   return "";
 }
 
+import MasterclassLibrary from "@/pages/masterclass-library";
+import MasterclassView from "@/pages/masterclass-view";
+
 function AppRoutes() {
   return (
     <DashboardLayout>
       <Switch>
         <Route path="/" component={DashboardHome} />
-        <Route path="/ritual/:id" component={RitualGuide} /> {/* Added route for RitualGuide */}
+        <Route path="/ritual/:id" component={RitualGuide} />
+        <Route path="/masterclasses" component={MasterclassLibrary} />
+        <Route path="/masterclass/:id" component={MasterclassView} />
         <Route path="/symptom-tool" component={SymptomTool} />
         <Route path="/community" component={Community} />
         <Route path="/affiliate" component={Affiliate} />
-        {/* Catch-all: show dashboard for any unknown route within the app */}
         <Route component={DashboardHome} />
       </Switch>
     </DashboardLayout>
