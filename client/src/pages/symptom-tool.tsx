@@ -37,7 +37,7 @@ const PRODUCTS: Product[] = [
   {
     id: "sleep_classic",
     name: "Deep Rest Blend",
-    price: 0, // TODO: Revert to 28.00 after testing
+    price: 28.00,
     description: "A calming infusion of chamomile, valerian root, and lavender designed to quiet the mind and prepare the body for restorative sleep.",
     image: chamomileImage,
     benefits: ["Promotes Deep Sleep", "Reduces Anxiety", "Relaxes Muscles"],
@@ -47,7 +47,7 @@ const PRODUCTS: Product[] = [
   {
     id: "sleep_island",
     name: "Island Dreams Soursop",
-    price: 0, // TODO: Revert to 35.00 after testing
+    price: 35.00,
     description: "A traditional Caribbean remedy using Soursop leaves (Graviola) to soothe nerves and induce a heavy, peaceful sleep.",
     image: chamomileImage,
     benefits: ["Nerve Tonic", "Deep Relaxation", "Tropical Traditions"],
@@ -59,7 +59,7 @@ const PRODUCTS: Product[] = [
   {
     id: "energy_focus",
     name: "Morning Focus Elixir",
-    price: 0, // TODO: Revert to 32.00 after testing
+    price: 32.00,
     description: "An awakening blend of yerba mate, guayusa, and lemon peel. Provides sustained energy without the jitters or crash of coffee.",
     image: hibiscusImage,
     benefits: ["Boosts Focus", "Sustained Energy", "No Jitters"],
@@ -69,7 +69,7 @@ const PRODUCTS: Product[] = [
   {
     id: "energy_roots",
     name: "Vitality Roots Tonic",
-    price: 0, // TODO: Revert to 38.00 after testing
+    price: 38.00,
     description: "A powerhouse of Sarsparilla, Ginger, and Bissy (Cola Nut). This earthy blend is a traditional Caribbean stamina builder.",
     image: hibiscusImage,
     benefits: ["Stamina", "Circulation", "Natural Virility"],
@@ -81,7 +81,7 @@ const PRODUCTS: Product[] = [
   {
     id: "digest_mint",
     name: "Gut Harmony Tea",
-    price: 0, // TODO: Revert to 26.00 after testing
+    price: 26.00,
     description: "Soothing peppermint, ginger, and fennel seeds work together to calm bloating and support healthy digestion after meals.",
     image: chamomileImage,
     benefits: ["Soothes Bloating", "Aids Digestion", "Fresh Breath"],
@@ -91,7 +91,7 @@ const PRODUCTS: Product[] = [
   {
     id: "digest_detox",
     name: "Bitter Detox (Cerassee)",
-    price: 0, // TODO: Revert to 30.00 after testing
+    price: 30.00,
     description: "Authentication Cerassee (Bitter Melon) tea. A potent, bitter cleanser used for generations to reset the gut and purify the blood.",
     image: chamomileImage,
     benefits: ["Gut Reset", "Blood Purification", "Sugar Balance"],
@@ -103,7 +103,7 @@ const PRODUCTS: Product[] = [
   {
     id: "immunity_berry",
     name: "Defense Shield Brew",
-    price: 0, // TODO: Revert to 30.00 after testing
+    price: 30.00,
     description: "A potent mix of elderberry, echinacea, and vitamin-rich rosehips to strengthen your body's natural defenses year-round.",
     image: hibiscusImage,
     benefits: ["Immune Support", "Vitamin C Rich", "Antioxidant Boost"],
@@ -113,7 +113,7 @@ const PRODUCTS: Product[] = [
   {
     id: "immunity_bush",
     name: "Bush Doctor (Guinea Hen)",
-    price: 0, // TODO: Revert to 40.00 after testing
+    price: 40.00,
     description: "Guinea Hen Weed (Anamu) paired with Turmeric. A serious herbal ally known for its cellular support and deep immune boosting properties.",
     image: hibiscusImage,
     benefits: ["Cellular Health", "Deep Immunity", "Inflammation"],
@@ -125,7 +125,7 @@ const PRODUCTS: Product[] = [
   {
     id: "stress_calm",
     name: "Calm Mind Infusion",
-    price: 0, // TODO: Revert to 28.00 after testing
+    price: 28.00,
     description: "Adaptogenic ashwagandha meets holy basil (tulsi) to help your body manage stress and find balance in chaotic moments.",
     image: chamomileImage,
     benefits: ["Reduces Cortisol", "Balances Mood", "Adaptogenic"],
@@ -135,7 +135,7 @@ const PRODUCTS: Product[] = [
   {
     id: "stress_nerves",
     name: "Blue Vervain Nerve Tonic",
-    price: 0, // TODO: Revert to 35.00 after testing
+    price: 35.00,
     description: "Blue Vervain is the ultimate 'nervine'. Great for those who are 'wired but tired', helping to release tension held in the neck and shoulders.",
     image: chamomileImage,
     benefits: ["Muscle Release", "Nervous System", "Tension Relief"],

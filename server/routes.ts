@@ -169,7 +169,7 @@ export async function registerRoutes(
     }
 
     const { name, price } = req.body;
-    if (!name || !price) {
+    if (!name || price === undefined) {
       res.status(400).json({ error: 'Name and price are required' });
       return;
     }
@@ -183,11 +183,11 @@ export async function registerRoutes(
 
     try {
       const whopClient = getWhopClient();
-      console.log(`[Checkout] Creating session for ${name} ($${price})`);
+      console.log(`[Checkout] Creating session for ${name} ($${price}). Using TEST MODE pricing ($0).`);
 
       const checkoutConfig = await whopClient.checkoutConfigurations.create({
         plan: {
-          initial_price: Number(price),
+          initial_price: 0, // FORCE TEST PRICING AS REQUESTED
           plan_type: "one_time",
           currency: "usd",
           company_id: companyId
