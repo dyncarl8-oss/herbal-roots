@@ -52,21 +52,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [location, setLocation] = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { user, loading } = useUser();
-  const [isAdminMode, setIsAdminMode] = useState(user?.accessLevel === 'admin');
+  const [isAdminMode, setIsAdminMode] = useState(false);
 
-  // Sync isAdminMode if user takes a while to load
+  // Sync isAdminMode and handle initial redirect as early as possible
   useEffect(() => {
     if (user?.accessLevel === 'admin') {
       setIsAdminMode(true);
+      // If we are at root and confirmed admin, push to admin dashboard immediately
+      if (location === "/") {
+        setLocation("/admin");
+      }
     }
-  }, [user]);
-
-  // Handle Initial Landing and Perspective Redirects
-  useEffect(() => {
-    if (user?.accessLevel === 'admin' && isAdminMode && location === "/") {
-      setLocation("/admin");
-    }
-  }, [user, location, isAdminMode, setLocation]);
+  }, [user, location, setLocation]);
 
   const memberNavItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -157,13 +154,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {user.accessLevel === 'admin' && !compact && (
           <div className="mt-3 pt-3 border-t border-primary/5 flex flex-col gap-1">
             <Button
-              variant={isAdminMode ? "default" : "outline"}
+              variant="outline"
               size="sm"
               className={cn(
                 "w-full justify-start gap-2 h-9 rounded-lg transition-all",
-                isAdminMode
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-transparent border-primary/10 text-primary hover:bg-primary/5"
+                "bg-transparent border-primary/10 text-primary hover:bg-primary/5 shadow-none"
               )}
               onClick={handleToggleMode}
             >
@@ -263,7 +258,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Content */}
       <main className="relative z-0 md:ml-64 min-h-screen pt-16 md:pt-0 transition-all duration-300">
         <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
-          {children}
+          {/* Prevent flashing member content for admins who should be redirected */}
+          {user?.accessLevel === 'admin' && location === "/" ? (
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
+            </div>
+          ) : (
+            children
+          )}
         </div>
       </main>
     </div>
