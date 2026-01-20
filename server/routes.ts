@@ -3,6 +3,7 @@ import { type Server } from "http";
 import { connectToDatabase } from "./db";
 import { whopAuthMiddleware } from "./middleware/auth";
 import { getWhopCompanyId, getWhopClient } from "./whop";
+import { addSavedBlend, getUserSavedBlends } from "./models/user";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -77,6 +78,83 @@ export async function registerRoutes(
     } catch (error) {
       console.error('[Routes] Check access error:', error);
       res.status(500).json({ error: 'Failed to check access' });
+    }
+  });
+
+  // ============================================
+  // Dashboard & User Data Routes
+  // ============================================
+
+  /**
+   * GET /api/dashboard/stats
+   * Returns user statistics for the dashboard
+   */
+  app.get('/api/dashboard/stats', whopAuthMiddleware, async (req: Request, res: Response) => {
+    if (!req.user) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+
+    try {
+      // Calculate streak (days since joined for now)
+      const joinDate = new Date(req.user.createdAt);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - joinDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      res.json({
+        streakDays: diffDays,
+        affiliateEarnings: 0, // Placeholder
+        communityPosts: 0,    // Placeholder
+        joinedAt: req.user.createdAt
+      });
+    } catch (error) {
+      console.error('[Routes] Stats error:', error);
+      res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+  });
+
+  /**
+   * GET /api/user/blends
+   * Get user's saved blends/rituals
+   */
+  app.get('/api/user/blends', whopAuthMiddleware, async (req: Request, res: Response) => {
+    if (!req.user || !req.whopUserId) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+
+    try {
+      const blends = await getUserSavedBlends(req.whopUserId);
+      res.json(blends);
+    } catch (error) {
+      console.error('[Routes] Get blends error:', error);
+      res.status(500).json({ error: 'Failed to fetch blends' });
+    }
+  });
+
+  /**
+   * POST /api/user/blends
+   * Save a new blend/ritual
+   */
+  app.post('/api/user/blends', whopAuthMiddleware, async (req: Request, res: Response) => {
+    if (!req.user || !req.whopUserId) {
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+
+    const { name, type } = req.body;
+    if (!name || !type) {
+      res.status(400).json({ error: 'Name and type are required' });
+      return;
+    }
+
+    try {
+      await addSavedBlend(req.whopUserId, { name, type });
+      res.json({ success: true });
+    } catch (error) {
+      console.error('[Routes] Save blend error:', error);
+      res.status(500).json({ error: 'Failed to save blend' });
     }
   });
 

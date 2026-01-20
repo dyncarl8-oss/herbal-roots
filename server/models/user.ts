@@ -1,6 +1,13 @@
 import { Collection, ObjectId } from 'mongodb';
 import { getDatabase } from '../db';
 
+// Basic structure for a saved blend/ritual
+export interface SavedBlend {
+    name: string;
+    type: string;
+    savedAt: string; // ISO date string
+}
+
 export interface User {
     _id?: ObjectId;
     whopUserId: string;      // Primary key (user_xxx format)
@@ -9,6 +16,7 @@ export interface User {
     profilePicture?: string;
     bio?: string;
     accessLevel: 'admin' | 'customer' | 'no_access';
+    savedBlends?: SavedBlend[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -87,4 +95,26 @@ export async function updateUserAccessLevel(
         { $set: { accessLevel, updatedAt: new Date() } },
         { returnDocument: 'after' }
     );
+}
+
+export async function addSavedBlend(whopUserId: string, blend: { name: string; type: string }): Promise<User | null> {
+    const collection = await getUsersCollection();
+    const savedBlend: SavedBlend = {
+        ...blend,
+        savedAt: new Date().toISOString()
+    };
+
+    return collection.findOneAndUpdate(
+        { whopUserId },
+        {
+            $push: { savedBlends: { $each: [savedBlend], $position: 0 } } as any,
+            $set: { updatedAt: new Date() }
+        },
+        { returnDocument: 'after' }
+    );
+}
+
+export async function getUserSavedBlends(whopUserId: string): Promise<SavedBlend[]> {
+    const user = await getUserByWhopId(whopUserId);
+    return user?.savedBlends || [];
 }
