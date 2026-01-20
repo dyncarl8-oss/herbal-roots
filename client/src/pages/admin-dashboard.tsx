@@ -126,7 +126,7 @@ export default function AdminDashboard() {
                             </div>
                             <ArrowUpRight className="text-muted-foreground w-4 h-4" />
                         </div>
-                        <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Total Revenue</p>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Platform Revenue</p>
                         <h3 className="text-3xl font-bold text-primary mt-1">${stats?.totalRevenue.toFixed(2)}</h3>
                     </CardContent>
                 </Card>
@@ -139,7 +139,7 @@ export default function AdminDashboard() {
                             </div>
                             <Badge variant="outline" className="text-primary border-primary/20">50% Earned</Badge>
                         </div>
-                        <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Commission Balance</p>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Command Commission</p>
                         <h3 className="text-3xl font-bold text-primary mt-1">${stats?.totalCommission.toFixed(2)}</h3>
                     </CardContent>
                 </Card>
@@ -151,7 +151,7 @@ export default function AdminDashboard() {
                                 <Users size={24} />
                             </div>
                         </div>
-                        <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Active Members</p>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Active Seekers</p>
                         <h3 className="text-3xl font-bold text-primary mt-1">{stats?.memberCount}</h3>
                     </CardContent>
                 </Card>
@@ -163,7 +163,7 @@ export default function AdminDashboard() {
                                 <MessageSquare size={24} />
                             </div>
                         </div>
-                        <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Circle Rituals</p>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Ritual Pulse</p>
                         <h3 className="text-3xl font-bold text-primary mt-1">{posts.length}</h3>
                     </CardContent>
                 </Card>
@@ -172,24 +172,24 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Recent Transactions */}
                 <Card className="bg-white/40 backdrop-blur-xl border-white/50 border-none shadow-soft overflow-hidden">
-                    <CardHeader>
-                        <CardTitle className="font-serif text-2xl">Financial Ledger</CardTitle>
+                    <CardHeader className="p-6 border-b border-primary/5">
+                        <CardTitle className="font-serif text-2xl">Financial Intelligence</CardTitle>
                         <CardDescription>Visualizing platform activity and incoming commissions.</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-6">
                         <div className="space-y-4">
                             {transactions.length === 0 ? (
                                 <div className="text-center py-10 opacity-30 italic">No transactions recorded yet.</div>
                             ) : (
                                 transactions.map((t) => (
-                                    <div key={t._id} className="flex items-center justify-between p-4 rounded-2xl bg-white/50 border border-white/20 group hover:shadow-sm transition-all">
+                                    <div key={t._id} className="flex items-center justify-between p-4 rounded-2xl bg-white/50 border border-white/20 group hover:shadow-sm transition-all hover:bg-white/80">
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600">
                                                 <DollarSign size={18} />
                                             </div>
                                             <div>
                                                 <p className="font-bold text-primary text-sm">{t.description}</p>
-                                                <p className="text-[10px] text-muted-foreground">Buyer: {t.buyerWhopId.slice(0, 8)}...</p>
+                                                <p className="text-[10px] text-muted-foreground">Audit ID: {t.buyerWhopId.slice(0, 8)}...</p>
                                             </div>
                                         </div>
                                         <div className="text-right">
@@ -203,20 +203,20 @@ export default function AdminDashboard() {
                     </CardContent>
                 </Card>
 
-                {/* Sanctuary Moderation */}
+                {/* Sanctuary Moderation Summary */}
                 <Card className="bg-white/40 backdrop-blur-xl border-white/50 border-none shadow-soft overflow-hidden">
-                    <CardHeader>
+                    <CardHeader className="p-6 border-b border-primary/5">
                         <div className="flex items-center justify-between">
                             <div>
-                                <CardTitle className="font-serif text-2xl">Sanctuary Control</CardTitle>
-                                <CardDescription>Monitor and moderate recent community rituals.</CardDescription>
+                                <CardTitle className="font-serif text-2xl">Sentinel Overview</CardTitle>
+                                <CardDescription>High-level monitoring of recent community rituals.</CardDescription>
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-6">
                         <div className="space-y-4">
                             {posts.slice(0, 5).map((post) => (
-                                <div key={post._id} className="flex items-start justify-between p-4 rounded-2xl bg-white/50 border border-white/20 group hover:border-red-100 transition-all">
+                                <div key={post._id} className="flex items-start justify-between p-4 rounded-2xl bg-white/50 border border-white/20 group hover:border-red-100 transition-all hover:bg-white/80">
                                     <div className="flex gap-3">
                                         <Avatar className="h-8 w-8">
                                             <AvatarImage src={post.authorAvatar} />
@@ -226,14 +226,14 @@ export default function AdminDashboard() {
                                         </Avatar>
                                         <div className="flex-1">
                                             <p className="text-xs font-bold text-primary">{post.authorName}</p>
-                                            <p className="text-sm text-foreground/80 font-light line-clamp-2 mt-1 italic">"{post.content}"</p>
-                                            <p className="text-[10px] text-muted-foreground mt-2">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</p>
+                                            <p className="text-[11px] text-foreground/80 font-light line-clamp-2 mt-1 italic border-l border-primary/10 pl-2">"{post.content}"</p>
+                                            <p className="text-[9px] text-muted-foreground mt-2 uppercase tracking-tighter">{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</p>
                                         </div>
                                     </div>
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-xl"
+                                        className="text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-xl opacity-0 group-hover:opacity-100 transition-all shadow-sm"
                                         onClick={() => handleDeletePost(post._id)}
                                     >
                                         <Trash2 size={16} />
@@ -241,7 +241,7 @@ export default function AdminDashboard() {
                                 </div>
                             ))}
                             {posts.length > 5 && (
-                                <p className="text-center text-[10px] text-muted-foreground pt-4 uppercase tracking-widest font-bold">Showing Latest 5 of {posts.length} Rituals</p>
+                                <p className="text-center text-[10px] text-muted-foreground pt-4 uppercase tracking-widest font-bold">Latest 5 Rituals tracked</p>
                             )}
                         </div>
                     </CardContent>

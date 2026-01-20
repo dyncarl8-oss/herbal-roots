@@ -393,6 +393,37 @@ export async function registerRoutes(
   // ============================================
 
   /**
+   * GET /api/admin/users/stats
+   * Aggregates affiliate performance (revenue/sales) per user
+   */
+  app.get('/api/admin/users/stats', adminAuthMiddleware, async (req: Request, res: Response) => {
+    try {
+      const transactions = await getAllTransactions();
+      const users = await getAllUsers();
+
+      const stats = users.map(user => {
+        // Sales where this user was the buyer
+        const userTransactions = transactions.filter(t => t.buyerWhopId === user.whopUserId);
+        // Sales where this user was the referring affiliate
+        const referralTransactions = transactions.filter(t => t.affiliateWhopId === user.whopUserId);
+
+        return {
+          whopUserId: user.whopUserId,
+          totalPurchases: userTransactions.length,
+          totalSpend: userTransactions.reduce((sum, t) => sum + t.amount, 0),
+          referralCount: referralTransactions.length,
+          referralRevenue: referralTransactions.reduce((sum, t) => sum + t.amount, 0)
+        };
+      });
+
+      res.json(stats);
+    } catch (error) {
+      console.error('[Admin] Stats aggregation error:', error);
+      res.status(500).json({ error: 'Failed to aggregate user stats' });
+    }
+  });
+
+  /**
    * GET /api/admin/stats
    * Returns high-level admin dashboard statistics
    */

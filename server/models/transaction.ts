@@ -7,6 +7,7 @@ export interface Transaction {
     amount: number;         // Total sale amount
     commission: number;     // 50% for admins
     buyerWhopId: string;
+    affiliateWhopId?: string; // Track who referred the sale
     description: string;
     createdAt: Date;
 }
