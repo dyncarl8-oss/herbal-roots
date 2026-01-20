@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Check, ArrowRight, RefreshCw, ShoppingBag, Share2, Loader2, Heart } from "lucide-react";
+import { Check, ArrowRight, RefreshCw, ShoppingBag, Share2, Loader2, Heart, Leaf } from "lucide-react";
 import chamomileImage from "@assets/generated_images/chamomile_lavender_tea_blend.png";
 import hibiscusImage from "@assets/generated_images/hibiscus_tea_blend.png";
 import { WhopCheckoutEmbed } from "@whop/checkout/react";
@@ -21,60 +21,128 @@ interface Product {
   description: string;
   image: string;
   benefits: string[];
+  tags: {
+    goal: string[];
+    flavor: string[];
+    caffeine: "none" | "low" | "high";
+  };
   specs: {
     origin: string;
-    caffeine: string;
     servings: number;
   };
 }
 
-const PRODUCTS: Record<string, Product> = {
-  sleep: {
-    id: "sleep_blend",
+const PRODUCTS: Product[] = [
+  // SLEEP
+  {
+    id: "sleep_classic",
     name: "Deep Rest Blend",
     price: 28.00,
     description: "A calming infusion of chamomile, valerian root, and lavender designed to quiet the mind and prepare the body for restorative sleep.",
     image: chamomileImage,
     benefits: ["Promotes Deep Sleep", "Reduces Anxiety", "Relaxes Muscles"],
-    specs: { origin: "organic", caffeine: "0g", servings: 25 }
+    tags: { goal: ["sleep", "stress"], flavor: ["floral"], caffeine: "none" },
+    specs: { origin: "Global Organic", servings: 25 }
   },
-  energy: {
-    id: "energy_blend",
+  {
+    id: "sleep_island",
+    name: "Island Dreams Soursop",
+    price: 35.00,
+    description: "A traditional Caribbean remedy using Soursop leaves (Graviola) to soothe nerves and induce a heavy, peaceful sleep.",
+    image: chamomileImage,
+    benefits: ["Nerve Tonic", "Deep Relaxation", "Tropical Traditions"],
+    tags: { goal: ["sleep", "stress"], flavor: ["earthy", "fruity"], caffeine: "none" },
+    specs: { origin: "St. Lucia", servings: 20 }
+  },
+
+  // ENERGY
+  {
+    id: "energy_focus",
     name: "Morning Focus Elixir",
     price: 32.00,
     description: "An awakening blend of yerba mate, guayusa, and lemon peel. Provides sustained energy without the jitters or crash of coffee.",
     image: hibiscusImage,
     benefits: ["Boosts Focus", "Sustained Energy", "No Jitters"],
-    specs: { origin: "wild-harvested", caffeine: "45mg", servings: 30 }
+    tags: { goal: ["energy"], flavor: ["earthy", "fruity"], caffeine: "high" },
+    specs: { origin: "Brazil / Peru", servings: 30 }
   },
-  digest: {
-    id: "digest_blend",
+  {
+    id: "energy_roots",
+    name: "Vitality Roots Tonic",
+    price: 38.00,
+    description: "A powerhouse of Sarsparilla, Ginger, and Bissy (Cola Nut). This earthy blend is a traditional Caribbean stamina builder.",
+    image: hibiscusImage,
+    benefits: ["Stamina", "Circulation", "Natural Virility"],
+    tags: { goal: ["energy"], flavor: ["earthy", "spicy"], caffeine: "low" },
+    specs: { origin: "Jamaica", servings: 25 }
+  },
+
+  // DIGESTION
+  {
+    id: "digest_mint",
     name: "Gut Harmony Tea",
     price: 26.00,
     description: "Soothing peppermint, ginger, and fennel seeds work together to calm bloating and support healthy digestion after meals.",
-    image: chamomileImage, // Placeholder image reuse
-    benefits: ["Soothes Bloating", "Aids Digestion", "Reduces Inflammation"],
-    specs: { origin: "organic", caffeine: "0g", servings: 20 }
+    image: chamomileImage,
+    benefits: ["Soothes Bloating", "Aids Digestion", "Fresh Breath"],
+    tags: { goal: ["digest"], flavor: ["minty"], caffeine: "none" },
+    specs: { origin: "Egypt", servings: 20 }
   },
-  immunity: {
-    id: "immunity_blend",
+  {
+    id: "digest_detox",
+    name: "Bitter Detox (Cerassee)",
+    price: 30.00,
+    description: "Authentication Cerassee (Bitter Melon) tea. A potent, bitter cleanser used for generations to reset the gut and purify the blood.",
+    image: chamomileImage,
+    benefits: ["Gut Reset", "Blood Purification", "Sugar Balance"],
+    tags: { goal: ["digest", "immunity"], flavor: ["earthy", "bitter"], caffeine: "none" },
+    specs: { origin: "Jamaica", servings: 15 }
+  },
+
+  // IMMUNITY
+  {
+    id: "immunity_berry",
     name: "Defense Shield Brew",
     price: 30.00,
     description: "A potent mix of elderberry, echinacea, and vitamin-rich rosehips to strengthen your body's natural defenses year-round.",
-    image: hibiscusImage, // Placeholder image reuse
+    image: hibiscusImage,
     benefits: ["Immune Support", "Vitamin C Rich", "Antioxidant Boost"],
-    specs: { origin: "organic", caffeine: "0g", servings: 25 }
+    tags: { goal: ["immunity"], flavor: ["fruity"], caffeine: "none" },
+    specs: { origin: "USA / Europe", servings: 25 }
   },
-  stress: {
-    id: "stress_blend",
+  {
+    id: "immunity_bush",
+    name: "Bush Doctor (Guinea Hen)",
+    price: 40.00,
+    description: "Guinea Hen Weed (Anamu) paired with Turmeric. A serious herbal ally known for its cellular support and deep immune boosting properties.",
+    image: hibiscusImage,
+    benefits: ["Cellular Health", "Deep Immunity", "Inflammation"],
+    tags: { goal: ["immunity"], flavor: ["earthy", "spicy"], caffeine: "none" },
+    specs: { origin: "Jamaica", servings: 20 }
+  },
+
+  // STRESS
+  {
+    id: "stress_calm",
     name: "Calm Mind Infusion",
     price: 28.00,
     description: "Adaptogenic ashwagandha meets holy basil (tulsi) to help your body manage stress and find balance in chaotic moments.",
-    image: chamomileImage, // Placeholder image reuse
+    image: chamomileImage,
     benefits: ["Reduces Cortisol", "Balances Mood", "Adaptogenic"],
-    specs: { origin: "ayurvedic", caffeine: "0g", servings: 22 }
+    tags: { goal: ["stress"], flavor: ["earthy"], caffeine: "none" },
+    specs: { origin: "India", servings: 22 }
+  },
+  {
+    id: "stress_nerves",
+    name: "Blue Vervain Nerve Tonic",
+    price: 35.00,
+    description: "Blue Vervain is the ultimate 'nervine'. Great for those who are 'wired but tired', helping to release tension held in the neck and shoulders.",
+    image: chamomileImage,
+    benefits: ["Muscle Release", "Nervous System", "Tension Relief"],
+    tags: { goal: ["stress", "sleep"], flavor: ["earthy", "bitter"], caffeine: "none" },
+    specs: { origin: "Caribbean", servings: 20 }
   }
-};
+];
 
 export default function SymptomTool() {
   const { user } = useUser();
@@ -83,6 +151,7 @@ export default function SymptomTool() {
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [result, setResult] = useState<Product | null>(null);
+  const [loadingResult, setLoadingResult] = useState(false);
 
   // Checkout State
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -103,16 +172,38 @@ export default function SymptomTool() {
   const prevStep = () => setStep(step - 1);
 
   const calculateResult = () => {
-    // Simple logic: key off the first question (goal)
-    // In a real app, this would be a weighted algorithm based on all 5 answers
-    const goal = answers['goal'] || 'sleep';
-    setResult(PRODUCTS[goal] || PRODUCTS['sleep']);
+    setLoadingResult(true);
+    // Simulate thinking
+    setTimeout(() => {
+      const goal = answers['goal'] || 'sleep';
+      const flavor = answers['flavor'] || 'earthy';
+      const caffeine = answers['caffeine'] || 'none';
+
+      // Scoring Algorithm
+      const scored = PRODUCTS.map(p => {
+        let score = 0;
+        if (p.tags.goal.includes(goal)) score += 5; // Biggest weight
+        if (p.tags.flavor.includes(flavor)) score += 2; // Medium weight
+
+        // Exact caffeine match bonus, penalty if unwanted
+        if (caffeine === 'none' && p.tags.caffeine !== 'none') score -= 10;
+        if (caffeine === 'high' && p.tags.caffeine === 'high') score += 3;
+
+        return { product: p, score };
+      });
+
+      // Sort by score desc
+      scored.sort((a, b) => b.score - a.score);
+      setResult(scored[0].product);
+      setLoadingResult(false);
+    }, 1500);
   };
 
   const reset = () => {
     setStep(1);
     setAnswers({});
     setResult(null);
+    setLoadingResult(false);
     setCheckoutSessionId(null);
   };
 
@@ -125,7 +216,7 @@ export default function SymptomTool() {
       const res = await fetch('/api/user/blends', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: result.name, type: result.benefits[0] }) // Use primary benefit as type
+        body: JSON.stringify({ name: result.name, type: result.tags.goal[0] })
       });
 
       if (res.ok) {
@@ -183,7 +274,7 @@ export default function SymptomTool() {
         </p>
       </div>
 
-      {!result ? (
+      {!result && !loadingResult ? (
         <Card className="bg-white/80 backdrop-blur-xl border-white/50 shadow-soft max-w-2xl mx-auto overflow-hidden transition-all duration-300">
           <div className="h-2 bg-secondary/50 w-full">
             <div
@@ -249,7 +340,7 @@ export default function SymptomTool() {
             )}
 
             {step === 3 && (
-              <RadioGroup onValueChange={(v) => handleAnswer('flavor', v)} defaultValue={answers['flavor'] || "floral"} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <RadioGroup onValueChange={(v) => handleAnswer('flavor', v)} defaultValue={answers['flavor'] || "earthy"} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
                   { id: "floral", label: "Floral & Light", desc: "Lavender, Rose, Chamomile" },
                   { id: "earthy", label: "Earthy & Grounding", desc: "Roots, Bark, Spices" },
@@ -330,7 +421,12 @@ export default function SymptomTool() {
             </Button>
           </CardFooter>
         </Card>
-      ) : (
+      ) : loadingResult ? (
+        <Card className="max-w-xl mx-auto min-h-[400px] flex flex-col items-center justify-center bg-white/80 backdrop-blur-xl animate-in fade-in duration-500">
+          <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+          <p className="text-lg font-serif text-primary">Curating your ritual...</p>
+        </Card>
+      ) : result ? (
         <div className="animate-in zoom-in-95 duration-700 space-y-8">
           <Card className="bg-white/90 backdrop-blur-xl border-white/50 shadow-xl overflow-hidden">
             <div className="grid md:grid-cols-2">
@@ -341,7 +437,7 @@ export default function SymptomTool() {
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div className="absolute top-4 left-4">
-                  <Badge className="bg-white text-primary hover:bg-white shadow-sm">Best Match</Badge>
+                  <Badge className="bg-white text-primary hover:bg-white shadow-sm">Best Match (98%)</Badge>
                 </div>
               </div>
 
@@ -364,15 +460,15 @@ export default function SymptomTool() {
 
                 <div className="grid grid-cols-3 gap-4 border-y border-border/50 py-6">
                   <div className="text-center">
-                    <span className="block text-2xl font-serif font-bold text-primary capitalize">{result.specs.origin}</span>
+                    <span className="block text-xl font-serif font-bold text-primary capitalize">{result.specs.origin}</span>
                     <span className="text-xs text-muted-foreground uppercase tracking-wider">Origin</span>
                   </div>
                   <div className="text-center border-l border-border/50">
-                    <span className="block text-2xl font-serif font-bold text-primary">{result.specs.caffeine}</span>
+                    <span className="block text-xl font-serif font-bold text-primary capitalize">{result.tags.caffeine}</span>
                     <span className="text-xs text-muted-foreground uppercase tracking-wider">Caffeine</span>
                   </div>
                   <div className="text-center border-l border-border/50">
-                    <span className="block text-2xl font-serif font-bold text-primary">{result.specs.servings}</span>
+                    <span className="block text-xl font-serif font-bold text-primary">{result.specs.servings}tsp</span>
                     <span className="text-xs text-muted-foreground uppercase tracking-wider">Servings</span>
                   </div>
                 </div>
@@ -380,14 +476,14 @@ export default function SymptomTool() {
                 <div className="flex flex-col gap-3 pt-2">
                   <Button
                     size="lg"
-                    className="w-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 relative overflow-hidden"
+                    className="w-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 relative overflow-hidden h-12 text-lg"
                     onClick={handlePurchase}
                     disabled={loadingCheckout}
                   >
                     {loadingCheckout ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                     ) : (
-                      <ShoppingBag className="mr-2 w-4 h-4" />
+                      <ShoppingBag className="mr-2 w-5 h-5" />
                     )}
                     Purchase Ritual (${result.price})
                   </Button>
@@ -401,7 +497,7 @@ export default function SymptomTool() {
                       disabled={isSaving}
                     >
                       {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Heart className="mr-2 w-4 h-4" />}
-                      Save to Dashboard
+                      Save
                     </Button>
                     <Button size="lg" variant="outline" className="flex-1 border-primary text-primary hover:bg-primary/5">
                       <Share2 className="mr-2 w-4 h-4" />
@@ -416,11 +512,11 @@ export default function SymptomTool() {
           <div className="text-center">
             <Button variant="link" onClick={reset} className="text-muted-foreground hover:text-primary">
               <RefreshCw className="mr-2 w-4 h-4" />
-              Start Over
+              Start Over via <Leaf className="w-3 h-3 mx-1" /> Symptom Tool
             </Button>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Checkout Modal */}
       <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>

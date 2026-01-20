@@ -190,9 +190,8 @@ export async function registerRoutes(
         plan: {
           initial_price: Number(price),
           plan_type: "one_time",
-          currency: "usd",
-          company_id: companyId
-        },
+          currency: "usd"
+        } as any, // Cast to any to avoid TS error about missing company_id which causes runtime error
         metadata: {
           product_name: name,
           user_id: req.whopUserId,
