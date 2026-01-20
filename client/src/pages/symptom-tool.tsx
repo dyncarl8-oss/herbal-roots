@@ -436,14 +436,18 @@ export default function SymptomTool() {
         <div className="animate-in zoom-in-95 duration-700 space-y-8">
           <Card className="bg-white/90 backdrop-blur-xl border-white/50 shadow-xl overflow-hidden">
             <div className="grid md:grid-cols-2">
-              <div className="relative h-64 md:h-auto bg-secondary/30 group overflow-hidden">
+              <div className="md:col-span-1 relative h-64 md:h-auto overflow-hidden">
                 <img
-                  src={result.image}
-                  alt={result.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  src={`/rituals/${result!.id}.png`}
+                  alt={result!.name}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'; // Hide if fails
+                    e.currentTarget.parentElement!.style.backgroundColor = '#e5e7eb'; // Gray fallback
+                  }}
                 />
-                <div className="absolute top-4 left-4">
-                  <Badge className="bg-white text-primary hover:bg-white shadow-sm">Best Match (98%)</Badge>
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-primary shadow-sm">
+                  Best Match
                 </div>
               </div>
 
@@ -549,6 +553,62 @@ export default function SymptomTool() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Browse All Rituals Section */}
+      <div className="max-w-6xl mx-auto mt-24">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-serif text-primary mb-4">Explore All Rituals</h2>
+          <p className="text-muted-foreground">Discover the full collection of Caribbean wellness traditions.</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {PRODUCTS.map((product) => (
+            <Card key={product.id} className="group hover:shadow-lg transition-all border-none bg-white/50 backdrop-blur-sm overflow-hidden">
+              <div className="aspect-square relative overflow-hidden bg-secondary/10">
+                <img
+                  src={`/rituals/${product.id}.png`}
+                  alt={product.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  onError={(e) => e.currentTarget.style.display = 'none'}
+                />
+              </div>
+              <CardContent className="p-4">
+                <h3 className="font-serif text-lg font-bold text-primary mb-1">{product.name}</h3>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {product.benefits.slice(0, 2).map((tag) => (
+                    <span key={tag} className="text-[10px] uppercase tracking-wider bg-secondary/30 px-2 py-1 rounded">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </CardContent>
+              <CardFooter className="p-4 pt-0">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    // Select this product manually
+                    setStep(6);
+                    setAnswers(prev => ({ ...prev, manualSelect: product.id }));
+                    // Recalculate result would be complex here, so strictly speaking this is just a view.
+                    // Better to just link to the ritual page?
+                    // User wants to access the course.
+                    // For now, let's just View Ritual if unlocked? 
+                    // Actually, let's just make it "View Details" which simulates a result.
+                    // But the quiz logic is complex. 
+                    // Let's just Link to /ritual/:id but note it might be "locked" primarily. 
+                    // But since everything is open, we link to /ritual/:id
+                  }}
+                >
+                  <a href={`/ritual/${product.id}`} className="w-full h-full flex items-center justify-center">
+                    View Guide
+                  </a>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
