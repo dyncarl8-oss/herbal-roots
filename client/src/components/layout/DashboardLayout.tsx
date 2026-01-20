@@ -6,7 +6,9 @@ import {
   DollarSign,
   Leaf,
   Menu,
-  Loader2
+  Loader2,
+  ShieldCheck,
+  ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -50,13 +52,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [location] = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { user, loading } = useUser();
+  const [isAdminMode, setIsAdminMode] = useState(false);
 
-  const navItems = [
+  const memberNavItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
     { href: "/symptom-tool", label: "Symptom Tool", icon: Stethoscope },
     { href: "/community", label: "The Steep Circle", icon: Users },
     { href: "/affiliate", label: "Affiliate Hub", icon: DollarSign },
   ];
+
+  const adminNavItems = [
+    { href: "/admin", label: "Command Center", icon: ShieldCheck },
+    { href: "/community", label: "Moderation", icon: Users },
+    { href: "/affiliate", label: "Member Audit", icon: DollarSign },
+    { href: "/", label: "Exit to Member", icon: LayoutDashboard },
+  ];
+
+  const navItems = isAdminMode ? adminNavItems : memberNavItems;
 
   // User profile component for sidebar and mobile
   const UserProfile = ({ compact = false }: { compact?: boolean }) => {
@@ -101,17 +113,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     return (
       <div className={cn(
-        "flex items-center gap-3 p-2 rounded-xl bg-white/30 backdrop-blur-sm border border-white/20 shadow-sm group",
+        "p-2 rounded-xl bg-white/30 backdrop-blur-sm border border-white/20 shadow-sm group",
         compact && "p-1"
       )}>
-        <Avatar className={cn("border-2 border-primary/10", compact ? "h-8 w-8" : "h-10 w-10")}>
-          <AvatarImage src={user.profilePicture} alt={user.name} />
-          <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-        </Avatar>
-        {!compact && (
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-sm font-bold text-foreground truncate">{user.name}</p>
-            <p className="text-xs text-muted-foreground truncate">{getRoleLabel(user.accessLevel)}</p>
+        <div className="flex items-center gap-3">
+          <Avatar className={cn("border-2 border-primary/10", compact ? "h-8 w-8" : "h-10 w-10")}>
+            <AvatarImage src={user.profilePicture} alt={user.name} />
+            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+          </Avatar>
+          {!compact && (
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-sm font-bold text-foreground truncate">{user.name}</p>
+              <p className="text-xs text-muted-foreground truncate">{getRoleLabel(user.accessLevel)}</p>
+            </div>
+          )}
+        </div>
+
+        {user.accessLevel === 'admin' && !compact && (
+          <div className="mt-3 pt-3 border-t border-primary/5 flex flex-col gap-1">
+            <Button
+              variant={isAdminMode ? "default" : "outline"}
+              size="sm"
+              className={cn(
+                "w-full justify-start gap-2 h-9 rounded-lg transition-all",
+                isAdminMode
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "bg-transparent border-primary/10 text-primary hover:bg-primary/5"
+              )}
+              onClick={() => setIsAdminMode(!isAdminMode)}
+            >
+              <ShieldCheck size={14} className={isAdminMode ? "animate-pulse" : ""} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">
+                {isAdminMode ? "Command Mode" : "Switch to Admin"}
+              </span>
+            </Button>
           </div>
         )}
       </div>

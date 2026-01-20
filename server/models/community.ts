@@ -98,3 +98,10 @@ export async function addReply(postId: string, reply: Omit<Reply, '_id' | 'creat
 
     return newReply;
 }
+
+export async function deletePost(postId: string): Promise<boolean> {
+    const collection = await getPostsCollection();
+    const result = await collection.deleteOne({ _id: new ObjectId(postId) });
+    return result.deletedCount === 1;
+}
+

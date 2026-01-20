@@ -142,3 +142,22 @@ export async function optionalWhopAuthMiddleware(
         next();
     }
 }
+
+/**
+ * Middleware that requires admin access level
+ */
+export async function adminAuthMiddleware(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> {
+    await whopAuthMiddleware(req, res, () => {
+        if (req.user?.accessLevel === 'admin') {
+            next();
+        } else {
+            console.warn(`[Auth] Non-admin access attempt: ${req.user?.name} (${req.user?.whopUserId})`);
+            res.status(403).json({ error: 'Admin access required' });
+        }
+    });
+}
+

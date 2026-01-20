@@ -1,10 +1,11 @@
 import type { Express, Request, Response } from "express";
 import { type Server } from "http";
 import { connectToDatabase } from "./db";
-import { whopAuthMiddleware } from "./middleware/auth";
+import { whopAuthMiddleware, adminAuthMiddleware } from "./middleware/auth";
 import { getWhopCompanyId, getWhopClient } from "./whop";
-import { addSavedBlend, getUserSavedBlends, getAllUsers } from "./models/user";
-import { createPost, getAllPosts, toggleLike, addReply } from "./models/community";
+import { addSavedBlend, getUserSavedBlends, getAllUsers, updateUserBalance, creditSystemAdmin } from "./models/user";
+import { createPost, getAllPosts, toggleLike, addReply, deletePost } from "./models/community";
+import { getAdminStats, getAllTransactions, createTransaction } from "./models/transaction";
 
 // --- Functional Masterclasses Database ---
 const MASTERCLASSES = [
@@ -354,6 +355,139 @@ export async function registerRoutes(
     } catch (error) {
       console.error('[Routes] Create checkout error:', error);
       res.status(500).json({ error: 'Failed to create checkout session' });
+    }
+  });
+
+  /**
+   * POST /api/purchase/finalize
+   * Finalize a ritual purchase and credit 50% commission to admin
+   */
+  app.post('/api/purchase/finalize', whopAuthMiddleware, async (req: Request, res: Response) => {
+    const { productName, price } = req.body;
+    if (!productName || price === undefined) return res.status(400).json({ error: 'Missing purchase details' });
+
+    try {
+      const commission = price * 0.5;
+
+      // 1. Record the transaction
+      await createTransaction({
+        type: 'ritual_purchase',
+        amount: price,
+        commission: commission,
+        buyerWhopId: String(req.whopUserId),
+        description: `Purchase of ${productName}`
+      });
+
+      // 2. Credit the platform admin
+      await creditSystemAdmin(commission);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('[Purchase] Finalization error:', error);
+      res.status(500).json({ error: 'Failed to finalize purchase' });
+    }
+  });
+
+  // ============================================
+  // Admin Command Center Routes
+  // ============================================
+
+  /**
+   * GET /api/admin/stats
+   * Returns high-level admin dashboard statistics
+   */
+  app.get('/api/admin/stats', adminAuthMiddleware, async (req: Request, res: Response) => {
+    try {
+      const stats = await getAdminStats();
+      const users = await getAllUsers();
+
+      res.json({
+        ...stats,
+        memberCount: users.length,
+        adminBalance: req.user?.balance || 0
+      });
+    } catch (error) {
+      console.error('[Admin] Stats error:', error);
+      res.status(500).json({ error: 'Failed to fetch admin stats' });
+    }
+  });
+
+  /**
+   * GET /api/admin/transactions
+   * Returns a list of all financial transactions
+   */
+  app.get('/api/admin/transactions', adminAuthMiddleware, async (_req: Request, res: Response) => {
+    try {
+      const transactions = await getAllTransactions();
+      res.json(transactions);
+    } catch (error) {
+      console.error('[Admin] Transactions error:', error);
+      res.status(500).json({ error: 'Failed to fetch transactions' });
+    }
+  });
+
+  /**
+   * GET /api/admin/users
+   * Returns a list of all registered members/affiliates
+   */
+  app.get('/api/admin/users', adminAuthMiddleware, async (_req: Request, res: Response) => {
+    try {
+      const users = await getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error('[Admin] Users error:', error);
+      res.status(500).json({ error: 'Failed to fetch users' });
+    }
+  });
+
+  /**
+   * DELETE /api/admin/posts/:id
+   * Moderator: Delete an inappropriate community post
+   */
+  app.delete('/api/admin/posts/:id', adminAuthMiddleware, async (req: Request, res: Response) => {
+    try {
+      const postId = String(req.params.id);
+      const success = await deletePost(postId);
+      if (success) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ error: 'Post not found' });
+      }
+    } catch (error) {
+      console.error('[Admin] Delete post error:', error);
+      res.status(500).json({ error: 'Failed to delete post' });
+    }
+  });
+
+  /**
+   * POST /api/admin/mock-purchase
+   * Trigger the 50% commission logic (Simulation for Testing)
+   */
+  app.post('/api/admin/mock-purchase', adminAuthMiddleware, async (req: Request, res: Response) => {
+    const { productName, price } = req.body;
+    if (!productName || price === undefined) return res.status(400).json({ error: 'Missing data' });
+
+    try {
+      const commission = price * 0.5;
+
+      // 1. Log the transaction
+      await createTransaction({
+        type: 'ritual_purchase',
+        amount: price,
+        commission: commission,
+        buyerWhopId: String(req.whopUserId),
+        description: `Purchase of ${productName}`
+      });
+
+      // 2. Update Admin Balance (We credit the active admin for this test)
+      if (req.whopUserId) {
+        await updateUserBalance(String(req.whopUserId), commission);
+      }
+
+      res.json({ success: true, commissionEarned: commission });
+    } catch (error) {
+      console.error('[Admin] Mock purchase error:', error);
+      res.status(500).json({ error: 'Simulation failed' });
     }
   });
 

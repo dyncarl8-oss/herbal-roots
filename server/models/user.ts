@@ -18,6 +18,8 @@ export interface User {
     bio?: string;
     accessLevel: 'admin' | 'customer' | 'no_access';
     savedBlends?: SavedBlend[];
+    balance?: number;        // Current available commission
+    totalEarned?: number;    // Lifetime commission earned
     createdAt: Date;
     updatedAt: Date;
 }
@@ -118,4 +120,24 @@ export async function addSavedBlend(whopUserId: string, blend: { name: string; t
 export async function getUserSavedBlends(whopUserId: string): Promise<SavedBlend[]> {
     const user = await getUserByWhopId(whopUserId);
     return user?.savedBlends || [];
+}
+
+export async function updateUserBalance(whopUserId: string, amount: number): Promise<User | null> {
+    const collection = await getUsersCollection();
+    return collection.findOneAndUpdate(
+        { whopUserId },
+        {
+            $inc: { balance: amount, totalEarned: amount },
+            $set: { updatedAt: new Date() }
+        },
+        { returnDocument: 'after' }
+    );
+}
+
+export async function creditSystemAdmin(amount: number): Promise<User | null> {
+    const collection = await getUsersCollection();
+    const admin = await collection.findOne({ accessLevel: 'admin' });
+    if (!admin) return null;
+
+    return updateUserBalance(admin.whopUserId, amount);
 }

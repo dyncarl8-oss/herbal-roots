@@ -29,12 +29,14 @@ function getBasePath(): string {
 
 import MasterclassLibrary from "@/pages/masterclass-library";
 import MasterclassView from "@/pages/masterclass-view";
+import AdminDashboard from "@/pages/admin-dashboard";
 
 function AppRoutes() {
   return (
     <DashboardLayout>
       <Switch>
         <Route path="/" component={DashboardHome} />
+        <Route path="/admin" component={AdminDashboard} />
         <Route path="/ritual/:id" component={RitualGuide} />
         <Route path="/masterclasses" component={MasterclassLibrary} />
         <Route path="/masterclass/:id" component={MasterclassView} />

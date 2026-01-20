@@ -617,6 +617,16 @@ export default function SymptomTool() {
                     title: "Order Completed!",
                     description: "Ritual Unlocked. Redirecting to your guide...",
                   });
+
+                  // Finalize purchase and record commission
+                  if (result) {
+                    await fetch("/api/purchase/finalize", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ productName: result.name, price: result.price })
+                    });
+                  }
+
                   setIsCheckoutOpen(false);
                   if (result?.id) {
                     await saveProduct(result.id);
