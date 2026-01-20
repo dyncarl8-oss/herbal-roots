@@ -159,51 +159,52 @@ export default function DashboardHome() {
             <CardTitle className="font-serif text-2xl text-primary">Your Rituals</CardTitle>
             <CardDescription>Based on your saved blends from symptom checks</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {blends.length > 0 ? (
-              blends.map((item, i) => {
-                const Content = (
-                  <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/50 border border-white/40 hover:bg-white/80 transition-colors group cursor-pointer text-left w-full relative">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground group-hover:scale-110 transition-transform">
-                        <Leaf size={18} />
+          <CardContent className="flex flex-col h-[400px]">
+            <div className="flex-grow overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+              {blends.length > 0 ? (
+                blends.map((item, i) => {
+                  const Content = (
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-10 h-10 rounded-full bg-secondary flex-shrink-0 flex items-center justify-center text-secondary-foreground group-hover:scale-110 transition-transform">
+                          <Leaf size={18} />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-medium text-foreground truncate">{item.name}</h4>
+                          <p className="text-xs text-muted-foreground truncate">{item.type}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium text-foreground">{item.name}</h4>
-                        <p className="text-xs text-muted-foreground">{item.type}</p>
+
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <span className="text-[10px] text-muted-foreground hidden sm:block">
+                          {formatDistanceToNow(new Date(item.savedAt), { addSuffix: true })}
+                        </span>
+                        {item.productId && (
+                          <Badge variant="outline" className="border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 whitespace-nowrap">
+                            View <ArrowRight className="w-3 h-3 ml-1" />
+                          </Badge>
+                        )}
                       </div>
                     </div>
+                  );
 
-                    <div className="flex items-center gap-4">
-                      <span className="text-xs text-muted-foreground hidden sm:block">
-                        {formatDistanceToNow(new Date(item.savedAt), { addSuffix: true })}
-                      </span>
-                      {item.productId && (
-                        <Badge variant="outline" className="border-primary/20 text-primary hover:bg-primary/10">
-                          View Guide <ArrowRight className="w-3 h-3 ml-1" />
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                );
-
-                return item.productId ? (
-                  <Link key={i} href={`/ritual/${item.productId}`} className="block w-full">
-                    {Content}
-                  </Link>
-                ) : (
-                  <div key={i}>{Content}</div>
-                );
-              })
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>No saved rituals yet. Take the assessment to find one!</p>
-              </div>
-            )}
-
-            <Link href="/symptom-tool">
-              <Button variant="ghost" className="w-full mt-2 text-primary hover:text-primary/80 hover:bg-primary/5">
-                Take a new assessment
+                  return item.productId ? (
+                    <Link key={i} href={`/ritual/${item.productId}`} className="block w-full">
+                      {Content}
+                    </Link>
+                  ) : (
+                    <div key={i}>{Content}</div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No saved rituals yet. Take the assessment to find one!</p>
+                </div>
+              )}
+            </div>
+            <Link href="/symptom-tool" className="block mt-6">
+              <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md h-12">
+                Take a New Assessment
               </Button>
             </Link>
           </CardContent>

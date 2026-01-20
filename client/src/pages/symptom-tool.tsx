@@ -170,8 +170,8 @@ export default function SymptomTool() {
 
   // --- Persistence & Ownership ---
   useEffect(() => {
-    fetchOwnedRituals();
-  }, []);
+    if (user) fetchOwnedRituals();
+  }, [user, step]); // Re-fetch if user changes or they come back to results/catalog
 
   const fetchOwnedRituals = async () => {
     try {
@@ -658,15 +658,15 @@ export default function SymptomTool() {
                     </div>
                   )}
                 </div>
-                <CardContent className="p-8 flex-grow">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="font-serif text-2xl font-bold text-primary">{product.name}</h3>
-                    <span className="text-accent-foreground font-medium">${product.price}</span>
+                <CardContent className="p-8 flex-grow flex flex-col">
+                  <div className="flex justify-between items-start mb-4 h-16">
+                    <h3 className="font-serif text-2xl font-bold text-primary line-clamp-2">{product.name}</h3>
+                    <span className="text-accent-foreground font-medium flex-shrink-0">${product.price}</span>
                   </div>
-                  <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+                  <p className="text-muted-foreground text-sm leading-relaxed mb-6 line-clamp-3 min-h-[4.5rem]">
                     {product.description}
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 mt-auto">
                     {product.benefits.slice(0, 3).map((tag) => (
                       <Badge key={tag} variant="outline" className="text-[10px] font-medium border-primary/20 text-primary/70">
                         {tag}
