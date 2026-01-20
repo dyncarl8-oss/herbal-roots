@@ -36,22 +36,32 @@ export async function whopAuthMiddleware(
 
         if (!userToken) {
             console.log('[Auth] No x-whop-user-token header present');
+            console.log('[Auth] Available headers:', Object.keys(req.headers));
             res.status(401).json({ error: 'Authentication required - no Whop user token' });
             return;
         }
 
+        console.log('[Auth] Token found, length:', userToken.length);
+
         const whopClient = getWhopClient();
 
         // Verify the user token - extracts userId from the token
-        // The SDK's verifyUserToken expects headers object
+        // The SDK's verifyUserToken expects a Headers-like object or IncomingHttpHeaders
         let userId: string;
         try {
-            // Create a headers-like object for the SDK
-            const headersObj = {
-                get: (name: string) => req.headers[name.toLowerCase()] as string | undefined
-            };
-            const verification = await (whopClient as any).verifyUserToken(headersObj);
+            // Create a Headers object that the SDK expects
+            const headers = new Headers();
+            for (const [key, value] of Object.entries(req.headers)) {
+                if (typeof value === 'string') {
+                    headers.set(key, value);
+                } else if (Array.isArray(value)) {
+                    headers.set(key, value.join(', '));
+                }
+            }
+
+            const verification = await whopClient.verifyUserToken(headers);
             userId = verification.userId;
+            console.log('[Auth] Token verified, userId:', userId);
         } catch (verifyError) {
             console.error('[Auth] Token verification failed:', verifyError);
             res.status(401).json({ error: 'Invalid Whop user token' });
@@ -62,6 +72,7 @@ export async function whopAuthMiddleware(
         let userProfile: WhopUserProfile;
         try {
             userProfile = await whopClient.users.retrieve(userId) as WhopUserProfile;
+            console.log('[Auth] User profile retrieved:', userProfile.username);
         } catch (profileError) {
             console.error('[Auth] Failed to retrieve user profile:', profileError);
             res.status(500).json({ error: 'Failed to retrieve user profile' });
