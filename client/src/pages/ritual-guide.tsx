@@ -344,7 +344,7 @@ export default function RitualGuide() {
             {/* Hero Image */}
             <div className="w-full aspect-video bg-secondary/20 rounded-3xl mb-12 border-2 border-dashed border-primary/10 relative overflow-hidden group shadow-lg">
                 <img
-                    src={`/rituals/${id}.jpg`}
+                    src={`/rituals/${id}.png`}
                     alt={content.title}
                     className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                     onError={(e) => {
