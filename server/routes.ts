@@ -143,14 +143,25 @@ export async function registerRoutes(
       return;
     }
 
-    const { name, type, productId } = req.body;
-    if (!name || !type) {
-      res.status(400).json({ error: 'Name and type are required' });
+    const { name, type, productId, tags } = req.body;
+    if (!name) {
+      res.status(400).json({ error: 'Name is required' });
       return;
     }
 
+    // Infer type from tags if missing
+    let finalType = type;
+    if (!finalType && tags?.goal) {
+      finalType = Array.isArray(tags.goal) ? tags.goal[0] : tags.goal;
+    }
+    if (!finalType) finalType = "Herbal Ritual";
+
     try {
-      await addSavedBlend(req.whopUserId, { name, type });
+      await addSavedBlend(req.whopUserId, {
+        name,
+        type: finalType,
+        productId
+      });
       res.json({ success: true });
     } catch (error) {
       console.error('[Routes] Save blend error:', error);

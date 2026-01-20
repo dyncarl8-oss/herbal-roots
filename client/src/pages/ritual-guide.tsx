@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useRoute } from "wouter";
 import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
@@ -312,8 +313,33 @@ const RITUALS: Record<string, RitualContent> = {
 export default function RitualGuide() {
     const [match, params] = useRoute("/ritual/:id");
     const { user } = useUser();
+    const [owned, setOwned] = useState<boolean | null>(null);
+    const [loading, setLoading] = useState(true);
+
     const id = match && params?.id ? params.id : "";
     const content = id ? RITUALS[id as keyof typeof RITUALS] : null;
+
+    useEffect(() => {
+        if (id) {
+            checkOwnership();
+        }
+    }, [id]);
+
+    const checkOwnership = async () => {
+        try {
+            setLoading(true);
+            const res = await fetch("/api/user/blends");
+            if (res.ok) {
+                const data = await res.json();
+                const isOwned = data.some((b: any) => b.productId === id);
+                setOwned(isOwned);
+            }
+        } catch (err) {
+            console.error("Failed to check ownership", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (!content) {
         return (
@@ -323,6 +349,41 @@ export default function RitualGuide() {
                 <Link href="/">
                     <Button variant="outline">Return Home</Button>
                 </Link>
+            </div>
+        );
+    }
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh]">
+                <Clock className="w-8 h-8 text-primary animate-spin mb-4" />
+                <p className="text-primary font-serif">Verifying Unlocked Access...</p>
+            </div>
+        );
+    }
+
+    if (!owned) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[80vh] text-center p-8 max-w-2xl mx-auto">
+                <div className="w-20 h-20 bg-secondary/50 rounded-full flex items-center justify-center mb-8">
+                    <Sparkles className="w-10 h-10 text-primary" />
+                </div>
+                <h2 className="text-4xl font-serif text-primary mb-4">Locked Ritual</h2>
+                <p className="text-lg text-muted-foreground mb-8">
+                    This ancient Caribbean ritual guide is currently locked. Personalized digital guides are unlocked through the Symptom-to-Stems tool or our ritual catalog.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                    <Link href="/symptom-tool">
+                        <Button className="bg-primary text-primary-foreground px-8 py-6 h-auto text-lg hover:bg-primary/90">
+                            Go to Symptom Tool
+                        </Button>
+                    </Link>
+                    <Link href="/dashboard">
+                        <Button variant="outline" className="px-8 py-6 h-auto text-lg">
+                            Go to Dashboard
+                        </Button>
+                    </Link>
+                </div>
             </div>
         );
     }
