@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -160,6 +160,59 @@ export default function SymptomTool() {
   const [checkoutSessionId, setCheckoutSessionId] = useState<string | null>(null);
   const [loadingCheckout, setLoadingCheckout] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [ownedRitualIds, setOwnedRitualIds] = useState<string[]>([]);
+
+  // --- Persistence & Ownership ---
+  useEffect(() => {
+    fetchOwnedRituals();
+  }, []);
+
+  const fetchOwnedRituals = async () => {
+    try {
+      const res = await fetch("/api/user/blends");
+      if (res.ok) {
+        const data = await res.json();
+        setOwnedRitualIds(data.map((b: any) => b.productId));
+      }
+    } catch (err) {
+      console.error("Failed to fetch owned rituals", err);
+    }
+  };
+
+  const saveProduct = async (productId: string) => {
+    const product = PRODUCTS.find(p => p.id === productId);
+    if (!product) return;
+
+    try {
+      setIsSaving(true);
+      const res = await fetch("/api/user/blends", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: product.name,
+          productId: product.id,
+          tags: product.tags,
+          recommendation: product.description,
+          details: {
+            benefits: product.benefits,
+            origin: product.specs.origin
+          }
+        }),
+      });
+
+      if (res.ok) {
+        setOwnedRitualIds(prev => [...prev, productId]);
+        toast({
+          title: "Ritual Unlocked!",
+          description: "This ritual has been added to your Sanctuary for permanent access.",
+        });
+      }
+    } catch (error) {
+      console.error("Save failed", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // --- Quiz Logic ---
   const handleAnswer = (key: string, value: any) => {
@@ -244,20 +297,23 @@ export default function SymptomTool() {
     }
   };
 
-  const handlePurchase = async () => {
-    if (!result) return;
+  const handlePurchase = async (productToBuy?: Product) => {
+    const target = productToBuy || result;
+    if (!target) return;
+
     setLoadingCheckout(true);
     try {
       const res = await fetch('/api/checkout/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: result.name, price: result.price }) // Sending price from frontend is insecure for real apps, but ok for this demo
+        body: JSON.stringify({ name: target.name, price: target.price })
       });
 
       if (!res.ok) throw new Error("Checkout creation failed");
 
       const data = await res.json();
       setCheckoutSessionId(data.sessionId);
+      if (productToBuy) setResult(productToBuy); // Set as current result if bought from catalog
       setIsCheckoutOpen(true);
     } catch (error) {
       console.error(error);
@@ -484,19 +540,31 @@ export default function SymptomTool() {
                 </div>
 
                 <div className="flex flex-col gap-3 pt-2">
-                  <Button
-                    size="lg"
-                    className="w-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 relative overflow-hidden h-12 text-lg"
-                    onClick={handlePurchase}
-                    disabled={loadingCheckout}
-                  >
-                    {loadingCheckout ? (
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    ) : (
-                      <ShoppingBag className="mr-2 w-5 h-5" />
-                    )}
-                    Purchase Ritual (${result.price})
-                  </Button>
+                  {ownedRitualIds.includes(result.id) ? (
+                    <Button
+                      size="lg"
+                      className="w-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 h-12 text-lg"
+                      asChild
+                    >
+                      <a href={`/ritual/${result.id}`}>
+                        View Unlocked Guide
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button
+                      size="lg"
+                      className="w-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 relative overflow-hidden h-12 text-lg"
+                      onClick={() => handlePurchase()}
+                      disabled={loadingCheckout}
+                    >
+                      {loadingCheckout ? (
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      ) : (
+                        <ShoppingBag className="mr-2 w-5 h-5" />
+                      )}
+                      Purchase Ritual (${result.price})
+                    </Button>
+                  )}
 
                   <div className="flex gap-3">
                     <Button
@@ -538,13 +606,14 @@ export default function SymptomTool() {
             {checkoutSessionId && (
               <WhopCheckoutEmbed
                 sessionId={checkoutSessionId}
-                onComplete={() => {
+                onComplete={async () => {
                   toast({
                     title: "Order Completed!",
                     description: "Ritual Unlocked. Redirecting to your guide...",
                   });
                   setIsCheckoutOpen(false);
                   if (result?.id) {
+                    await saveProduct(result.id);
                     setTimeout(() => setLocation(`/ritual/${result.id}`), 1000);
                   }
                 }}
@@ -555,58 +624,75 @@ export default function SymptomTool() {
       </Dialog>
 
       {/* Browse All Rituals Section */}
-      <div className="max-w-6xl mx-auto mt-24">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-serif text-primary mb-4">Explore All Rituals</h2>
-          <p className="text-muted-foreground">Discover the full collection of Caribbean wellness traditions.</p>
+      <div className="max-w-6xl mx-auto mt-24 mb-32">
+        <div className="text-center mb-16">
+          <Badge className="bg-secondary/50 text-primary border-none mb-4">The Collection</Badge>
+          <h2 className="text-4xl font-serif text-primary mb-4">Explore All Rituals</h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">Discover the full collection of Caribbean wellness traditions, available as targeted digital guides.</p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {PRODUCTS.map((product) => (
-            <Card key={product.id} className="group hover:shadow-lg transition-all border-none bg-white/50 backdrop-blur-sm overflow-hidden">
-              <div className="aspect-square relative overflow-hidden bg-secondary/10">
-                <img
-                  src={`/rituals/${product.id}.png`}
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  onError={(e) => e.currentTarget.style.display = 'none'}
-                />
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-serif text-lg font-bold text-primary mb-1">{product.name}</h3>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {product.benefits.slice(0, 2).map((tag) => (
-                    <span key={tag} className="text-[10px] uppercase tracking-wider bg-secondary/30 px-2 py-1 rounded">
-                      {tag}
-                    </span>
-                  ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16">
+          {PRODUCTS.map((product) => {
+            const isOwned = ownedRitualIds.includes(product.id);
+            return (
+              <Card key={product.id} className="group hover:shadow-2xl transition-all duration-500 border-none bg-white/40 backdrop-blur-md overflow-hidden flex flex-col h-full ring-1 ring-primary/5">
+                <div className="aspect-[16/9] relative overflow-hidden bg-secondary/10">
+                  <img
+                    src={`/rituals/${product.id}.png`}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    onError={(e) => {
+                      e.currentTarget.style.opacity = '0';
+                      e.currentTarget.parentElement!.classList.add('bg-secondary/20');
+                    }}
+                  />
+                  {!isOwned && (
+                    <div className="absolute top-4 right-4 bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-full shadow-lg transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                      Digital Guide
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-              <CardFooter className="p-4 pt-0">
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    // Select this product manually
-                    setStep(6);
-                    setAnswers(prev => ({ ...prev, manualSelect: product.id }));
-                    // Recalculate result would be complex here, so strictly speaking this is just a view.
-                    // Better to just link to the ritual page?
-                    // User wants to access the course.
-                    // For now, let's just View Ritual if unlocked? 
-                    // Actually, let's just make it "View Details" which simulates a result.
-                    // But the quiz logic is complex. 
-                    // Let's just Link to /ritual/:id but note it might be "locked" primarily. 
-                    // But since everything is open, we link to /ritual/:id
-                  }}
-                >
-                  <a href={`/ritual/${product.id}`} className="w-full h-full flex items-center justify-center">
-                    View Guide
-                  </a>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                <CardContent className="p-8 flex-grow">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="font-serif text-2xl font-bold text-primary">{product.name}</h3>
+                    <span className="text-accent-foreground font-medium">${product.price}</span>
+                  </div>
+                  <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+                    {product.description}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {product.benefits.slice(0, 3).map((tag) => (
+                      <Badge key={tag} variant="outline" className="text-[10px] font-medium border-primary/20 text-primary/70">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+                <CardFooter className="p-8 pt-0 mt-auto">
+                  {isOwned ? (
+                    <Button
+                      variant="outline"
+                      className="w-full border-primary text-primary hover:bg-primary hover:text-white transition-colors h-12 text-base font-medium"
+                      asChild
+                    >
+                      <a href={`/ritual/${product.id}`}>
+                        View Ritual Guide
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-12 text-base font-medium"
+                      onClick={() => handlePurchase(product)}
+                      disabled={loadingCheckout}
+                    >
+                      {loadingCheckout ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShoppingBag className="w-4 h-4 mr-2" />}
+                      Unlock Ritual (${product.price})
+                    </Button>
+                  )}
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </div>
