@@ -4,7 +4,7 @@ import { connectToDatabase } from "./db";
 import { whopAuthMiddleware } from "./middleware/auth";
 import { getWhopCompanyId, getWhopClient } from "./whop";
 import { addSavedBlend, getUserSavedBlends, getAllUsers } from "./models/user";
-import { createPost, getAllPosts, toggleLike } from "./models/community";
+import { createPost, getAllPosts, toggleLike, addReply } from "./models/community";
 
 // --- Functional Masterclasses Database ---
 const MASTERCLASSES = [
@@ -244,6 +244,31 @@ export async function registerRoutes(
     } catch (error) {
       console.error('[Routes] Toggle like error:', error);
       res.status(500).json({ error: 'Failed to update like' });
+    }
+  });
+
+  /**
+   * POST /api/community/posts/:id/replies
+   * Add a reply to a post
+   */
+  app.post('/api/community/posts/:id/replies', whopAuthMiddleware, async (req: Request, res: Response) => {
+    if (!req.user || !req.whopUserId) return res.status(401).json({ error: 'Not authenticated' });
+
+    const { content } = req.body;
+    if (!content) return res.status(400).json({ error: 'Reply content is required' });
+
+    try {
+      const postId = String(req.params.id);
+      const reply = await addReply(postId, {
+        authorWhopId: String(req.whopUserId),
+        authorName: req.user.name,
+        authorAvatar: req.user.profilePicture,
+        content
+      });
+      res.json(reply);
+    } catch (error) {
+      console.error('[Routes] Add reply error:', error);
+      res.status(500).json({ error: 'Failed to add reply' });
     }
   });
 

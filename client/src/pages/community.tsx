@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Heart, PlayCircle, BookOpen, Clock, ArrowRight, Loader2, Plus } from "lucide-react";
+import { MessageCircle, Heart, PlayCircle, BookOpen, Clock, ArrowRight, Loader2, Plus, RefreshCw } from "lucide-react";
 import { Link } from "wouter";
 import { useUser } from "@/context/UserContext";
 import {
@@ -19,6 +19,15 @@ import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import headerImage from "@assets/generated_images/serene_caribbean_ocean_header.png";
 
+interface Reply {
+  _id: string;
+  authorWhopId: string;
+  authorName: string;
+  authorAvatar?: string;
+  content: string;
+  createdAt: string;
+}
+
 interface CommunityPost {
   _id: string;
   authorWhopId: string;
@@ -27,6 +36,7 @@ interface CommunityPost {
   authorRole: string;
   content: string;
   likes: string[];
+  replies: Reply[];
   createdAt: string;
 }
 
@@ -35,11 +45,18 @@ export default function Community() {
   const { toast } = useToast();
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [newPostContent, setNewPostContent] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const fetchPosts = async () => {
+  // Reply State
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [isReplying, setIsReplying] = useState(false);
+
+  const fetchPosts = async (isManual = false) => {
+    if (isManual) setRefreshing(true);
     try {
       const res = await fetch("/api/community/posts");
       if (res.ok) {
@@ -49,6 +66,7 @@ export default function Community() {
       console.error("Failed to fetch posts", err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -93,7 +111,6 @@ export default function Community() {
         method: "POST",
       });
       if (res.ok) {
-        // Optimistic update
         setPosts(currentPosts =>
           currentPosts.map(p => {
             if (p._id === postId) {
@@ -114,9 +131,46 @@ export default function Community() {
     }
   };
 
+  const handleReply = async (postId: string) => {
+    if (!replyContent.trim()) return;
+    setIsReplying(true);
+    try {
+      const res = await fetch(`/api/community/posts/${postId}/replies`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: replyContent }),
+      });
+
+      if (res.ok) {
+        const newReply = await res.json();
+        setPosts(currentPosts =>
+          currentPosts.map(p => {
+            if (p._id === postId) {
+              return {
+                ...p,
+                replies: [...p.replies, newReply]
+              };
+            }
+            return p;
+          })
+        );
+        setReplyContent("");
+        setReplyingTo(null);
+        toast({
+          title: "Reply Posted!",
+          description: "Your voice has been added to the Circle.",
+        });
+      }
+    } catch (err) {
+      console.error("Failed to post reply", err);
+    } finally {
+      setIsReplying(false);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
-      {/* Community Header */}
+      {/* Community Header ... content same ... */}
       <div className="relative rounded-3xl overflow-hidden h-[300px] shadow-soft flex items-center justify-center text-center px-6">
         <img
           src={headerImage}
@@ -140,43 +194,55 @@ export default function Community() {
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-3xl font-serif font-bold text-primary">Morning Rituals</h2>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-105 transition-transform">
-                  <Plus className="w-4 h-4 mr-2" /> Share Ritual
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px] rounded-3xl border-none shadow-2xl bg-white/95 backdrop-blur-xl">
-                <DialogHeader>
-                  <DialogTitle className="font-serif text-2xl text-primary flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-                      <Plus className="w-4 h-4 text-primary" />
-                    </div>
-                    Share Your Ritual
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="py-4">
-                  <Textarea
-                    placeholder="Tell us about your morning steep... What are you brewing today?"
-                    className="min-h-[150px] rounded-2xl border-primary/10 focus-visible:ring-primary/20 bg-primary/5 text-lg placeholder:text-muted-foreground/50"
-                    value={newPostContent}
-                    onChange={(e) => setNewPostContent(e.target.value)}
-                  />
-                </div>
-                <DialogFooter>
-                  <Button
-                    className="w-full h-12 rounded-xl bg-primary text-lg"
-                    onClick={handleShareRitual}
-                    disabled={isPosting || !newPostContent.trim()}
-                  >
-                    {isPosting ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : "Post to The Circle"}
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full border-primary/10 hover:bg-primary/5 h-10 w-10"
+                onClick={() => fetchPosts(true)}
+                disabled={refreshing}
+              >
+                <RefreshCw className={`w-4 h-4 text-primary ${refreshing ? 'animate-spin' : ''}`} />
+              </Button>
+
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-105 transition-transform h-10 px-6">
+                    <Plus className="w-4 h-4 mr-2" /> Share Ritual
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px] rounded-3xl border-none shadow-2xl bg-white/95 backdrop-blur-xl">
+                  <DialogHeader>
+                    <DialogTitle className="font-serif text-2xl text-primary flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+                        <Plus className="w-4 h-4 text-primary" />
+                      </div>
+                      Share Your Ritual
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <Textarea
+                      placeholder="Tell us about your morning steep... What are you brewing today?"
+                      className="min-h-[150px] rounded-2xl border-primary/10 focus-visible:ring-primary/20 bg-primary/5 text-lg placeholder:text-muted-foreground/50"
+                      value={newPostContent}
+                      onChange={(e) => setNewPostContent(e.target.value)}
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      className="w-full h-12 rounded-xl bg-primary text-lg"
+                      onClick={handleShareRitual}
+                      disabled={isPosting || !newPostContent.trim()}
+                    >
+                      {isPosting ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : "Post to The Circle"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
 
-          {loading ? (
+          {loading && !refreshing ? (
             <div className="flex justify-center py-20">
               <Loader2 className="w-12 h-12 animate-spin text-primary opacity-50" />
             </div>
@@ -205,6 +271,7 @@ export default function Community() {
                         <p className="text-foreground leading-relaxed text-lg font-light">
                           {post.content}
                         </p>
+
                         <div className="flex items-center gap-6 pt-4 border-t border-primary/5">
                           <button
                             onClick={() => handleToggleLike(post._id)}
@@ -216,11 +283,74 @@ export default function Community() {
                             <Heart className={`w-4 h-4 ${user && post.likes.includes(user.id) ? 'fill-accent-foreground' : ''}`} />
                             {post.likes.length}
                           </button>
-                          <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
+                          <button
+                            className={`flex items-center gap-1.5 text-xs transition-colors ${replyingTo === post._id ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
+                            onClick={() => setReplyingTo(replyingTo === post._id ? null : post._id)}
+                          >
                             <MessageCircle className="w-4 h-4" />
                             Reply
                           </button>
                         </div>
+
+                        {/* Replies List */}
+                        {post.replies && post.replies.length > 0 && (
+                          <div className="mt-4 space-y-4 pl-4 border-l-2 border-primary/5">
+                            {post.replies.map((reply) => (
+                              <div key={reply._id} className="flex items-start gap-3">
+                                <Avatar className="h-8 w-8 border border-primary/5 shadow-sm">
+                                  <AvatarImage src={reply.authorAvatar} />
+                                  <AvatarFallback className="text-[10px] bg-secondary text-primary font-bold">
+                                    {reply.authorName ? reply.authorName[0] : "?"}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 bg-primary/5 rounded-2xl p-3">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <p className="text-xs font-bold text-primary">{reply.authorName}</p>
+                                    <span className="text-[10px] text-muted-foreground">
+                                      {formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true })}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-foreground/90 font-light leading-relaxed">
+                                    {reply.content}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Reply Input */}
+                        {replyingTo === post._id && (
+                          <div className="mt-4 flex gap-3 animate-in slide-in-from-top-2 duration-300">
+                            <Avatar className="h-8 w-8 border border-primary/5">
+                              <AvatarImage src={user?.profilePicture} />
+                              <AvatarFallback className="text-[10px] bg-secondary text-primary font-bold">
+                                {user?.name ? user.name[0] : "Y"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 space-y-2">
+                              <Textarea
+                                placeholder="Type your response..."
+                                className="min-h-[80px] rounded-xl border-primary/10 bg-primary/5 text-sm focus-visible:ring-primary/20 placeholder:text-muted-foreground/30"
+                                value={replyContent}
+                                onChange={(e) => setReplyContent(e.target.value)}
+                              />
+                              <div className="flex justify-end gap-2">
+                                <Button size="sm" variant="ghost" className="text-xs rounded-lg h-8" onClick={() => setReplyingTo(null)}>
+                                  Cancel
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="text-xs rounded-lg h-8 bg-primary"
+                                  disabled={isReplying || !replyContent.trim()}
+                                  onClick={() => handleReply(post._id)}
+                                >
+                                  {isReplying ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : "Reply"}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>

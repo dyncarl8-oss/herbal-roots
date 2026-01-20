@@ -1,6 +1,15 @@
 import { Collection, ObjectId } from 'mongodb';
 import { getDatabase } from '../db';
 
+export interface Reply {
+    _id: string; // Generated on creation
+    authorWhopId: string;
+    authorName: string;
+    authorAvatar?: string;
+    content: string;
+    createdAt: Date;
+}
+
 export interface CommunityPost {
     _id?: ObjectId;
     authorWhopId: string;
@@ -9,7 +18,7 @@ export interface CommunityPost {
     authorRole: string;
     content: string;
     likes: string[]; // Array of whop user IDs who liked the post
-    replies: any[]; // Placeholder for future reply structure
+    replies: Reply[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -68,4 +77,24 @@ export async function toggleLike(postId: string, userId: string): Promise<boolea
         );
         return true; // Result is liked
     }
+}
+
+export async function addReply(postId: string, reply: Omit<Reply, '_id' | 'createdAt'>): Promise<Reply> {
+    const collection = await getPostsCollection();
+    const now = new Date();
+    const newReply: Reply = {
+        _id: new ObjectId().toString(),
+        ...reply,
+        createdAt: now
+    };
+
+    await collection.updateOne(
+        { _id: new ObjectId(postId) },
+        {
+            $push: { replies: newReply },
+            $set: { updatedAt: now }
+        }
+    );
+
+    return newReply;
 }
