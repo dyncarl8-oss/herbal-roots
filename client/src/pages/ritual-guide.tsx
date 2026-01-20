@@ -4,6 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Clock, Flame, Leaf, Share2, Droplets, Sun, Moon, Brain, Heart, Sparkles, Image as ImageIcon } from "lucide-react";
+
+// Import all ritual images 
+const RITUAL_IMAGES = import.meta.glob("../../../attached_assets/rituals/*.png", { eager: true, import: "default" });
+const getRitualImage = (id: string) => {
+    return (RITUAL_IMAGES[`../../../attached_assets/rituals/${id}.png`] as string) || "";
+};
 import { Link } from "wouter";
 
 // --- RICH CONTENT DATABASE ---
@@ -306,7 +312,7 @@ const RITUALS: Record<string, RitualContent> = {
 export default function RitualGuide() {
     const [match, params] = useRoute("/ritual/:id");
     const { user } = useUser();
-    const id = match ? params?.id : null;
+    const id = match && params?.id ? params.id : "";
     const content = id ? RITUALS[id as keyof typeof RITUALS] : null;
 
     if (!content) {
@@ -344,7 +350,7 @@ export default function RitualGuide() {
             {/* Hero Image */}
             <div className="w-full aspect-video bg-secondary/20 rounded-3xl mb-12 border-2 border-dashed border-primary/10 relative overflow-hidden group shadow-lg">
                 <img
-                    src={`/rituals/${id}.png`}
+                    src={getRitualImage(id)}
                     alt={content.title}
                     className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                     onError={(e) => {

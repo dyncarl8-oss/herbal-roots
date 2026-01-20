@@ -14,6 +14,12 @@ import { WhopCheckoutEmbed } from "@whop/checkout/react";
 import { useUser } from "@/context/UserContext";
 import { useToast } from "@/hooks/use-toast";
 
+// Import all ritual images
+const RITUAL_IMAGES = import.meta.glob("../../../attached_assets/rituals/*.png", { eager: true, import: "default" });
+const getRitualImage = (id: string) => {
+  return (RITUAL_IMAGES[`../../../attached_assets/rituals/${id}.png`] as string) || "";
+};
+
 // --- Mock Product Database ---
 interface Product {
   id: string;
@@ -494,7 +500,7 @@ export default function SymptomTool() {
             <div className="grid md:grid-cols-2">
               <div className="md:col-span-1 relative h-64 md:h-auto overflow-hidden">
                 <img
-                  src={`/rituals/${result!.id}.png`}
+                  src={getRitualImage(result!.id)}
                   alt={result!.name}
                   className="absolute inset-0 w-full h-full object-cover"
                   onError={(e) => {
@@ -638,7 +644,7 @@ export default function SymptomTool() {
               <Card key={product.id} className="group hover:shadow-2xl transition-all duration-500 border-none bg-white/40 backdrop-blur-md overflow-hidden flex flex-col h-full ring-1 ring-primary/5">
                 <div className="aspect-[16/9] relative overflow-hidden bg-secondary/10">
                   <img
-                    src={`/rituals/${product.id}.png`}
+                    src={getRitualImage(product.id)}
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     onError={(e) => {
