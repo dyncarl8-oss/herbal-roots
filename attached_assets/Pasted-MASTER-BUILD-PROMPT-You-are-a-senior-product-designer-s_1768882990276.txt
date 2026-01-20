@@ -1,0 +1,298 @@
+MASTER BUILD PROMPT
+
+You are a senior product designer, systems architect, and full-stack engineer.
+
+Build a Hybrid Community & Affiliate Portal as a centralized monetization and education hub for a wellness tea & herbal brand using a “phygital” model (physical products + digital ecosystem).
+
+This should be a single unified web app that combines education, social selling, community, and affiliate monetization into one seamless experience.
+
+CORE GOAL
+
+Turn users into:
+
+Customers
+
+Members
+
+Affiliates
+
+Long-term brand advocates
+
+All inside one system.
+
+REQUIRED MODULES (ALL IN MVP)
+1) Symptom-to-Stems Tool (Recommendation + Referral Engine)
+
+Create a simple interface where users (or their social followers) input symptoms or wellness needs and receive personalized herbal blend recommendations.
+
+This module should:
+
+Accept symptom or wellness inputs
+
+Map them to specific blends/products
+
+Show benefits, ingredients, and rituals
+
+Include educational snippets
+
+Generate shareable referral/affiliate links
+
+Track conversions
+
+Allow admin to edit mappings
+
+Be usable as a standalone referral entry point
+
+Be embeddable or shareable
+
+This is both a wellness guide and a sales engine.
+
+2) Gated Paid Community (Subscription-Based Education Hub)
+
+Create a locked membership area called The Steep Circle.
+
+This should include:
+
+A paywalled content hub
+
+Video lessons
+
+PDFs
+
+Masterclasses
+
+Live Q&A access
+
+Replays
+
+Courses
+
+Structured learning paths
+
+Searchable content
+
+Community interaction
+
+Member profiles
+
+Progress tracking
+
+This is the main retention and trust engine.
+
+3) Influencer / Affiliate Plug-and-Play Dashboard
+
+Create a dashboard that makes it extremely easy for members to promote and earn.
+
+This should include:
+
+Unique referral links
+
+Earnings tracking
+
+Performance analytics
+
+Commission breakdowns
+
+Campaign tracking
+
+Asset library (images, videos, templates, scripts)
+
+Copy-paste captions
+
+Content ideas
+
+Brand kits
+
+Done-for-you materials
+
+Leaderboards (optional)
+
+Shareable tools
+
+This is the growth engine.
+
+ADMIN SYSTEM
+
+Include a powerful admin backend that allows:
+
+User management
+
+Role management
+
+Content uploads
+
+Lesson creation
+
+Course building
+
+Symptom → blend mapping
+
+Commission control
+
+Campaign creation
+
+Asset uploads
+
+Analytics
+
+Revenue tracking
+
+Access control
+
+Feature toggles
+
+System configuration
+
+MONETIZATION LOGIC
+
+Support two monetization paths:
+
+Product affiliate commissions
+
+Subscription-based commissions
+
+Track them independently.
+
+Support:
+
+Recurring commissions
+
+Lifetime attribution
+
+Transparent reporting
+
+Fraud prevention
+
+Admin overrides
+
+DESIGN & EXPERIENCE
+
+Design the platform to feel:
+
+Calm
+
+Premium
+
+Herbal
+
+Trustworthy
+
+Modern
+
+Simple
+
+Wellness-oriented
+
+Caribbean-inspired
+
+The UX should be:
+
+Extremely intuitive
+
+Beginner-friendly
+
+Mobile-responsive
+
+Clean and minimal
+
+Focused on conversion without feeling salesy
+
+USER FLOWS TO SUPPORT
+New Visitor
+
+→ Uses symptom tool
+→ Gets recommendation
+→ Learns
+→ Buys or subscribes
+
+Member
+
+→ Consumes content
+→ Learns
+→ Engages
+→ Upgrades to affiliate
+
+Affiliate
+
+→ Gets assets
+→ Shares links
+→ Tracks earnings
+→ Scales promotions
+
+Admin
+
+→ Manages system
+→ Uploads content
+→ Tracks growth
+→ Launches campaigns
+
+SYSTEM REQUIREMENTS
+
+Modular
+
+Scalable
+
+Secure
+
+Fast
+
+Mobile-first
+
+Clean UI
+
+Analytics-ready
+
+Role-based access
+
+API-friendly
+
+Designed for growth
+
+MVP SCOPE
+
+The first version must include:
+
+All 3 core modules
+
+Admin panel
+
+Content system
+
+Commission logic
+
+User roles
+
+Tracking
+
+Gated access
+
+Referral system
+
+Design for iteration.
+
+IMPORTANT
+
+
+Make sure to add authentication using whop, so we can know if the user is a member or an admin, redirect to member page if member and redirect to admin page if admin.
+
+Do NOT make this like a landing page, make this more like a dashboard, so it fits perfectly for a whop app.
+
+dont make it like they have to join something to access, all members can also access everthing in their member page sections, they should have like sections to navigate around for different srctions.
+Do not build this as three separate tools.
+This must feel like one unified ecosystem.
+
+Focus on:
+
+Retention
+
+Monetization
+
+Simplicity
+
+Scalability
+
+Social selling
+
+Community
+
+Education
