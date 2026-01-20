@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -147,6 +148,7 @@ const PRODUCTS: Product[] = [
 export default function SymptomTool() {
   const { user } = useUser();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -216,7 +218,11 @@ export default function SymptomTool() {
       const res = await fetch('/api/user/blends', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: result.name, type: result.tags.goal[0] })
+        body: JSON.stringify({
+          name: result.name,
+          type: result.tags.goal[0],
+          productId: result.id
+        })
       });
 
       if (res.ok) {
@@ -531,9 +537,12 @@ export default function SymptomTool() {
                 onComplete={() => {
                   toast({
                     title: "Order Completed!",
-                    description: "Thank you for your purchase. Your ritual is on its way.",
+                    description: "Ritual Unlocked. Redirecting to your guide...",
                   });
                   setIsCheckoutOpen(false);
+                  if (result?.id) {
+                    setTimeout(() => setLocation(`/ritual/${result.id}`), 1000);
+                  }
                 }}
               />
             )}

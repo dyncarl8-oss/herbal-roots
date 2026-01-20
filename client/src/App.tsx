@@ -1,5 +1,6 @@
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import DashboardHome from "@/pages/dashboard";
+import RitualGuide from "@/pages/ritual-guide";
 import SymptomTool from "@/pages/symptom-tool";
 import Community from "@/pages/community";
 import Affiliate from "@/pages/affiliate";
@@ -31,6 +32,7 @@ function AppRoutes() {
     <DashboardLayout>
       <Switch>
         <Route path="/" component={DashboardHome} />
+        <Route path="/ritual/:id" component={RitualGuide} /> {/* Added route for RitualGuide */}
         <Route path="/symptom-tool" component={SymptomTool} />
         <Route path="/community" component={Community} />
         <Route path="/affiliate" component={Affiliate} />

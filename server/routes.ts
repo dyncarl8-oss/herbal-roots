@@ -143,7 +143,7 @@ export async function registerRoutes(
       return;
     }
 
-    const { name, type } = req.body;
+    const { name, type, productId } = req.body;
     if (!name || !type) {
       res.status(400).json({ error: 'Name and type are required' });
       return;

@@ -19,6 +19,7 @@ interface SavedBlend {
   name: string;
   type: string;
   savedAt: string;
+  productId?: string;
 }
 
 export default function DashboardHome() {
@@ -160,22 +161,40 @@ export default function DashboardHome() {
           </CardHeader>
           <CardContent className="space-y-4">
             {blends.length > 0 ? (
-              blends.map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/50 border border-white/40 hover:bg-white/80 transition-colors group cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground group-hover:scale-110 transition-transform">
-                      <Leaf size={18} />
+              blends.map((item, i) => {
+                const Content = (
+                  <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/50 border border-white/40 hover:bg-white/80 transition-colors group cursor-pointer text-left w-full relative">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground group-hover:scale-110 transition-transform">
+                        <Leaf size={18} />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-foreground">{item.name}</h4>
+                        <p className="text-xs text-muted-foreground">{item.type}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-medium text-foreground">{item.name}</h4>
-                      <p className="text-xs text-muted-foreground">{item.type}</p>
+
+                    <div className="flex items-center gap-4">
+                      <span className="text-xs text-muted-foreground hidden sm:block">
+                        {formatDistanceToNow(new Date(item.savedAt), { addSuffix: true })}
+                      </span>
+                      {item.productId && (
+                        <Badge variant="outline" className="border-primary/20 text-primary hover:bg-primary/10">
+                          View Guide <ArrowRight className="w-3 h-3 ml-1" />
+                        </Badge>
+                      )}
                     </div>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(item.savedAt), { addSuffix: true })}
-                  </span>
-                </div>
-              ))
+                );
+
+                return item.productId ? (
+                  <Link key={i} href={`/ritual/${item.productId}`} className="block w-full">
+                    {Content}
+                  </Link>
+                ) : (
+                  <div key={i}>{Content}</div>
+                );
+              })
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <p>No saved rituals yet. Take the assessment to find one!</p>

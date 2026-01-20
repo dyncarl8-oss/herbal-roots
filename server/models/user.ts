@@ -5,6 +5,7 @@ import { getDatabase } from '../db';
 export interface SavedBlend {
     name: string;
     type: string;
+    productId?: string; // ID for linking to ritual guide
     savedAt: string; // ISO date string
 }
 
@@ -97,7 +98,7 @@ export async function updateUserAccessLevel(
     );
 }
 
-export async function addSavedBlend(whopUserId: string, blend: { name: string; type: string }): Promise<User | null> {
+export async function addSavedBlend(whopUserId: string, blend: { name: string; type: string; productId?: string }): Promise<User | null> {
     const collection = await getUsersCollection();
     const savedBlend: SavedBlend = {
         ...blend,
