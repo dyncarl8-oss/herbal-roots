@@ -52,15 +52,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [location, setLocation] = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { user, loading } = useUser();
-  const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
+  const [isAdminMode, setIsAdminMode] = useState<boolean>(user?.accessLevel === 'admin');
   const [hasCheckedInitialRedirect, setHasCheckedInitialRedirect] = useState(false);
 
-  // Sync isAdminMode carefully on first load
+  // Keep state in sync if user object changes (e.g. login/logout)
+  useEffect(() => {
+    if (user && !hasCheckedInitialRedirect) {
+      setIsAdminMode(user.accessLevel === 'admin');
+    }
+  }, [user, hasCheckedInitialRedirect]);
+
+  // Handle initial redirect only once per session entry
   useEffect(() => {
     if (!loading && user?.accessLevel === 'admin' && !hasCheckedInitialRedirect) {
-      setIsAdminMode(true);
       // Auto-redirect to admin if landing at root for the first time
-      if (location === "/") {
+      if (location === "/" || location === "") {
         setLocation("/admin");
       }
       setHasCheckedInitialRedirect(true);
@@ -270,7 +276,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="relative z-0 md:ml-64 min-h-screen pt-16 md:pt-0 transition-all duration-300">
         <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
           {/* Prevent flashing member content for admins who should be/are being redirected */}
-          {(user?.accessLevel === 'admin' && location === "/" && isAdminMode) ? (
+          {user?.accessLevel === 'admin' && (location === "/" || location === "") && isAdminMode ? (
             <div className="flex items-center justify-center min-h-[60vh]">
               <div className="text-center space-y-4">
                 <Loader2 className="w-10 h-10 animate-spin text-primary opacity-30 mx-auto" />
