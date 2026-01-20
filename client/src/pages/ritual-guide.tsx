@@ -341,14 +341,26 @@ export default function RitualGuide() {
                 <p className="text-xl text-primary/60 font-serif italic">{content.subtitle}</p>
             </div>
 
-            {/* Image Placeholder */}
-            <div className="w-full aspect-video bg-secondary/20 rounded-3xl mb-12 flex flex-col items-center justify-center border-2 border-dashed border-primary/10 relative overflow-hidden group">
-                <div className="absolute inset-0 bg-secondary/5 group-hover:bg-secondary/10 transition-colors" />
-                <ImageIcon className="w-16 h-16 text-primary/20 mb-4" />
-                <p className="text-primary/40 font-serif text-lg">Ritual Image Placeholder</p>
-                <p className="text-xs text-muted-foreground/60 mt-2 max-w-md text-center px-4 font-mono">
-                    {content.image_prompt}
-                </p>
+            {/* Hero Image */}
+            <div className="w-full aspect-video bg-secondary/20 rounded-3xl mb-12 border-2 border-dashed border-primary/10 relative overflow-hidden group shadow-lg">
+                <img
+                    src={`/rituals/${id}.jpg`}
+                    alt={content.title}
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                    onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                />
+                {/* Fallback Placeholder (Hidden by default, shown on error) */}
+                <div className="hidden absolute inset-0 flex flex-col items-center justify-center bg-secondary/20">
+                    <div className="absolute inset-0 bg-secondary/5 group-hover:bg-secondary/10 transition-colors" />
+                    <ImageIcon className="w-16 h-16 text-primary/20 mb-4" />
+                    <p className="text-primary/40 font-serif text-lg">Ritual Image Placeholder</p>
+                    <p className="text-xs text-muted-foreground/60 mt-2 max-w-md text-center px-4 font-mono">
+                        {content.image_prompt}
+                    </p>
+                </div>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 md:gap-12">
