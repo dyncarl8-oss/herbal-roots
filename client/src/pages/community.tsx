@@ -3,38 +3,116 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Heart, Share2, PlayCircle, BookOpen, Clock, ArrowRight, Loader2, Plus } from "lucide-react";
+import { MessageCircle, Heart, PlayCircle, BookOpen, Clock, ArrowRight, Loader2, Plus } from "lucide-react";
 import { Link } from "wouter";
+import { useUser } from "@/context/UserContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { formatDistanceToNow } from "date-fns";
 import headerImage from "@assets/generated_images/serene_caribbean_ocean_header.png";
 
 interface CommunityPost {
-  id: number;
-  author: string;
-  role: string;
+  _id: string;
+  authorWhopId: string;
+  authorName: string;
+  authorAvatar?: string;
+  authorRole: string;
   content: string;
-  likes: number;
-  time: string;
+  likes: string[];
+  createdAt: string;
 }
 
 export default function Community() {
+  const { user } = useUser();
+  const { toast } = useToast();
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [newPostContent, setNewPostContent] = useState("");
+  const [isPosting, setIsPosting] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const fetchPosts = async () => {
+    try {
+      const res = await fetch("/api/community/posts");
+      if (res.ok) {
+        setPosts(await res.json());
+      }
+    } catch (err) {
+      console.error("Failed to fetch posts", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const res = await fetch("/api/community/posts");
-        if (res.ok) {
-          setPosts(await res.json());
-        }
-      } catch (err) {
-        console.error("Failed to fetch posts", err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchPosts();
   }, []);
+
+  const handleShareRitual = async () => {
+    if (!newPostContent.trim()) return;
+    setIsPosting(true);
+    try {
+      const res = await fetch("/api/community/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newPostContent }),
+      });
+
+      if (res.ok) {
+        toast({
+          title: "Ritual Shared!",
+          description: "Your morning ritual is now live in the Circle.",
+        });
+        setNewPostContent("");
+        setIsDialogOpen(false);
+        fetchPosts();
+      }
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to share ritual. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPosting(false);
+    }
+  };
+
+  const handleToggleLike = async (postId: string) => {
+    if (!user) return;
+    try {
+      const res = await fetch(`/api/community/posts/${postId}/like`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        // Optimistic update
+        setPosts(currentPosts =>
+          currentPosts.map(p => {
+            if (p._id === postId) {
+              const hasLiked = p.likes.includes(user.id);
+              return {
+                ...p,
+                likes: hasLiked
+                  ? p.likes.filter(id => id !== user.id)
+                  : [...p.likes, user.id]
+              };
+            }
+            return p;
+          })
+        );
+      }
+    } catch (err) {
+      console.error("Failed to toggle like", err);
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -61,48 +139,86 @@ export default function Community() {
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-3xl font-serif font-bold text-primary">Morning Rituals</h2>
-            <Button size="sm" className="bg-primary text-primary-foreground rounded-full">
-              <Plus className="w-4 h-4 mr-2" /> Share Ritual
-            </Button>
+
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="bg-primary text-primary-foreground rounded-full shadow-lg hover:scale-105 transition-transform">
+                  <Plus className="w-4 h-4 mr-2" /> Share Ritual
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px] rounded-3xl border-none shadow-2xl bg-white/95 backdrop-blur-xl">
+                <DialogHeader>
+                  <DialogTitle className="font-serif text-2xl text-primary flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+                      <Plus className="w-4 h-4 text-primary" />
+                    </div>
+                    Share Your Ritual
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                  <Textarea
+                    placeholder="Tell us about your morning steep... What are you brewing today?"
+                    className="min-h-[150px] rounded-2xl border-primary/10 focus-visible:ring-primary/20 bg-primary/5 text-lg placeholder:text-muted-foreground/50"
+                    value={newPostContent}
+                    onChange={(e) => setNewPostContent(e.target.value)}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button
+                    className="w-full h-12 rounded-xl bg-primary text-lg"
+                    onClick={handleShareRitual}
+                    disabled={isPosting || !newPostContent.trim()}
+                  >
+                    {isPosting ? <Loader2 className="animate-spin w-4 h-4 mr-2" /> : "Post to The Circle"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {loading ? (
             <div className="flex justify-center py-20">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <Loader2 className="w-12 h-12 animate-spin text-primary opacity-50" />
             </div>
           ) : (
             <div className="space-y-6">
               {posts.map((post) => (
-                <Card key={post.id} className="bg-white/80 backdrop-blur-sm border-white/50 shadow-sm hover:shadow-md transition-all">
+                <Card key={post._id} className="bg-white/80 backdrop-blur-sm border-white/50 shadow-sm hover:shadow-md transition-all group overflow-hidden">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <Avatar className="h-10 w-10 border border-primary/10">
+                      <Avatar className="h-12 w-12 border-2 border-primary/5 shadow-inner">
+                        <AvatarImage src={post.authorAvatar} />
                         <AvatarFallback className="bg-secondary text-primary font-bold">
-                          {post.author[0]}
+                          {post.authorName ? post.authorName[0] : "M"}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 space-y-3">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-bold text-primary">{post.author}</p>
-                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{post.role}</p>
+                            <p className="font-bold text-primary group-hover:text-accent-foreground transition-colors">{post.authorName}</p>
+                            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">{post.authorRole}</p>
                           </div>
-                          <span className="text-xs text-muted-foreground">{post.time}</span>
+                          <span className="text-xs text-muted-foreground italic">
+                            {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                          </span>
                         </div>
-                        <p className="text-foreground leading-relaxed">
+                        <p className="text-foreground leading-relaxed text-lg font-light">
                           {post.content}
                         </p>
-                        <div className="flex items-center gap-6 pt-2 border-t border-primary/5">
-                          <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-accent-foreground transition-colors group">
-                            <Heart className="w-4 h-4 group-hover:fill-accent-foreground" />
-                            {post.likes}
+                        <div className="flex items-center gap-6 pt-4 border-t border-primary/5">
+                          <button
+                            onClick={() => handleToggleLike(post._id)}
+                            className={`flex items-center gap-1.5 text-xs transition-all ring-offset-background active:scale-90 ${user && post.likes.includes(user.id)
+                                ? 'text-accent-foreground font-bold'
+                                : 'text-muted-foreground hover:text-accent-foreground'
+                              }`}
+                          >
+                            <Heart className={`w-4 h-4 ${user && post.likes.includes(user.id) ? 'fill-accent-foreground' : ''}`} />
+                            {post.likes.length}
                           </button>
                           <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
                             <MessageCircle className="w-4 h-4" />
                             Reply
-                          </button>
-                          <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors ml-auto">
-                            <Share2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
@@ -110,6 +226,12 @@ export default function Community() {
                   </CardContent>
                 </Card>
               ))}
+
+              {posts.length === 0 && (
+                <div className="text-center py-20 bg-white/30 rounded-3xl border-2 border-dashed border-primary/5">
+                  <p className="text-muted-foreground italic">The Circle is quiet today. Be the first to share your ritual!</p>
+                </div>
+              )}
             </div>
           )}
         </div>

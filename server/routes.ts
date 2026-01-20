@@ -4,6 +4,7 @@ import { connectToDatabase } from "./db";
 import { whopAuthMiddleware } from "./middleware/auth";
 import { getWhopCompanyId, getWhopClient } from "./whop";
 import { addSavedBlend, getUserSavedBlends, getAllUsers } from "./models/user";
+import { createPost, getAllPosts, toggleLike } from "./models/community";
 
 // --- Functional Masterclasses Database ---
 const MASTERCLASSES = [
@@ -40,12 +41,7 @@ const MASTERCLASSES = [
   }
 ];
 
-// --- Mock Community Database ---
-const COMMUNITY_POSTS = [
-  { id: 1, author: "Aries K.", role: "Herbalist", content: "Just brewed a fresh batch of Blue Vervain for the evening. The clarity is unmatched! 🌿", likes: 12, time: "2h ago" },
-  { id: 2, author: "Solomon B.", role: "Member", content: "Success! My Cold Brew Sorrel turned out perfectly using the new masterclass technique. No bitterness at all.", likes: 8, time: "5h ago" },
-  { id: 3, author: "Luna M.", role: "Admin", content: "Don't forget to steep your roots for at least 30 minutes to get the full potency of the Caribbean 'Fire Cider'. 🔥", likes: 24, time: "1d ago" }
-];
+// --- Mock Community Database (Deleted - using MongoDB) ---
 
 export async function registerRoutes(
   httpServer: Server,
@@ -143,10 +139,12 @@ export async function registerRoutes(
       const diffTime = Math.abs(new Date().getTime() - joinDate.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
+      const posts = await getAllPosts();
+
       res.json({
         streakDays: diffDays || 1,
         affiliateEarnings: 0,
-        communityPosts: COMMUNITY_POSTS.length, // Real mock count
+        communityPosts: posts.length,
         joinedAt: req.user.createdAt
       });
     } catch (error) {
@@ -194,10 +192,59 @@ export async function registerRoutes(
 
   /**
    * GET /api/community/posts
-   * Returns recent community posts
+   * Returns recent community posts from MongoDB
    */
-  app.get('/api/community/posts', whopAuthMiddleware, (req: Request, res: Response) => {
-    res.json(COMMUNITY_POSTS);
+  app.get('/api/community/posts', whopAuthMiddleware, async (req: Request, res: Response) => {
+    try {
+      const posts = await getAllPosts();
+      res.json(posts);
+    } catch (error) {
+      console.error('[Routes] Fetch posts error:', error);
+      res.status(500).json({ error: 'Failed to fetch posts' });
+    }
+  });
+
+  /**
+   * POST /api/community/posts
+   * Create a new community ritual post
+   */
+  app.post('/api/community/posts', whopAuthMiddleware, async (req: Request, res: Response) => {
+    if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
+
+    const { content } = req.body;
+    if (!content) return res.status(400).json({ error: 'Content is required' });
+
+    try {
+      const post = await createPost({
+        authorWhopId: req.user.whopUserId,
+        authorName: req.user.name,
+        authorAvatar: req.user.profilePicture,
+        authorRole: req.user.accessLevel === 'admin' ? 'Admin' : 'Member',
+        content
+      });
+      res.json(post);
+    } catch (error) {
+      console.error('[Routes] Create post error:', error);
+      res.status(500).json({ error: 'Failed to create post' });
+    }
+  });
+
+  /**
+   * POST /api/community/posts/:id/like
+   * Toggle a like on a post
+   */
+  app.post('/api/community/posts/:id/like', whopAuthMiddleware, async (req: Request, res: Response) => {
+    if (!req.whopUserId) return res.status(401).json({ error: 'Not authenticated' });
+
+    try {
+      const postId = String(req.params.id);
+      const userId = String(req.whopUserId);
+      const isLiked = await toggleLike(postId, userId);
+      res.json({ liked: isLiked });
+    } catch (error) {
+      console.error('[Routes] Toggle like error:', error);
+      res.status(500).json({ error: 'Failed to update like' });
+    }
   });
 
   /**
