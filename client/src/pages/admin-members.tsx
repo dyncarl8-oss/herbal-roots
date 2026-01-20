@@ -42,7 +42,7 @@ interface UserStats {
     referralRevenue: number;
 }
 
-export default function AffiliateIntelligence() {
+export default function AdminMembers() {
     const [users, setUsers] = useState<User[]>([]);
     const [stats, setStats] = useState<UserStats[]>([]);
     const [loading, setLoading] = useState(true);
@@ -60,7 +60,7 @@ export default function AffiliateIntelligence() {
                 setStats(await statsRes.json());
             }
         } catch (err) {
-            console.error("Failed to fetch intelligence data", err);
+            console.error("Failed to fetch member data", err);
         } finally {
             setLoading(false);
         }
@@ -91,7 +91,7 @@ export default function AffiliateIntelligence() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
                 <Loader2 className="w-12 h-12 animate-spin text-primary opacity-50" />
-                <p className="mt-4 text-primary font-serif italic">Compiling Intelligence...</p>
+                <p className="mt-4 text-primary font-serif italic">Loading members...</p>
             </div>
         );
     }
@@ -101,13 +101,13 @@ export default function AffiliateIntelligence() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-4xl font-serif font-bold text-primary">Affiliate Intelligence</h1>
-                    <p className="text-muted-foreground italic">Tracking the growth and performance of the Herbal Roots network.</p>
+                    <h1 className="text-4xl font-serif font-bold text-primary">Member & Sales Audit</h1>
+                    <p className="text-muted-foreground italic">View member sales and referral performance.</p>
                 </div>
                 <div className="relative w-full md:w-72">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
-                        placeholder="Search affiliates..."
+                        placeholder="Search members..."
                         className="pl-10 h-10 rounded-full bg-white/50 border-white/20"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -123,9 +123,9 @@ export default function AffiliateIntelligence() {
                             <div className="p-3 bg-primary/10 rounded-2xl text-primary">
                                 <TrendingUp size={24} />
                             </div>
-                            <Badge variant="outline" className="text-[10px] border-primary/20">Growth</Badge>
+                            <Badge variant="outline" className="text-[10px] border-primary/20">Revenue</Badge>
                         </div>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Platform Influence</p>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Referral Sales</p>
                         <h3 className="text-3xl font-bold text-primary mt-1">${platformTotalRevenue.toFixed(2)}</h3>
                     </CardContent>
                 </Card>
@@ -137,7 +137,7 @@ export default function AffiliateIntelligence() {
                                 <Briefcase size={24} />
                             </div>
                         </div>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Referrals</p>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Orders</p>
                         <h3 className="text-3xl font-bold text-primary mt-1">{platformTotalReferrals}</h3>
                     </CardContent>
                 </Card>
@@ -149,35 +149,35 @@ export default function AffiliateIntelligence() {
                                 <Users size={24} />
                             </div>
                         </div>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Active Seekers</p>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Members</p>
                         <h3 className="text-3xl font-bold text-primary mt-1">{users.length}</h3>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Intelligence Table */}
+            {/* Audit Table */}
             <Card className="bg-white/40 backdrop-blur-xl border-none shadow-soft overflow-hidden">
                 <CardHeader className="border-b border-primary/5 bg-white/20 p-6">
-                    <CardTitle className="font-serif text-2xl">Affiliate Performance Audit</CardTitle>
-                    <CardDescription>Detailed metrics per member across the platform.</CardDescription>
+                    <CardTitle className="font-serif text-2xl">Member Directory</CardTitle>
+                    <CardDescription>List of all members and their sales performance.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-primary/5 text-left text-[10px] uppercase tracking-widest text-muted-foreground bg-primary/5">
-                                    <th className="px-6 py-4 font-bold">Herbalist</th>
+                                    <th className="px-6 py-4 font-bold">Member</th>
                                     <th className="px-6 py-4 font-bold">Role</th>
-                                    <th className="px-6 py-4 font-bold">Sales Generated</th>
-                                    <th className="px-6 py-4 font-bold">Revenue Influence</th>
-                                    <th className="px-6 py-4 font-bold text-right">Join Date</th>
+                                    <th className="px-6 py-4 font-bold">Orders</th>
+                                    <th className="px-6 py-4 font-bold">Sales Revenue</th>
+                                    <th className="px-6 py-4 font-bold text-right">Joined</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-primary/5">
                                 {filteredUsers.length === 0 ? (
                                     <tr>
                                         <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground italic opacity-50">
-                                            No matching affiliates found.
+                                            No matching members found.
                                         </td>
                                     </tr>
                                 ) : (
@@ -211,7 +211,7 @@ export default function AffiliateIntelligence() {
                                                 <td className="px-6 py-5">
                                                     <div className="flex items-center gap-2">
                                                         <Briefcase className="w-3 h-3 text-muted-foreground" />
-                                                        <span className="text-sm font-bold text-primary">{uStats.referralCount} Sales</span>
+                                                        <span className="text-sm font-bold text-primary">{uStats.referralCount} Orders</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-5">
@@ -226,7 +226,7 @@ export default function AffiliateIntelligence() {
                                                             <Calendar size={10} />
                                                             {format(new Date(u.createdAt), "MMM yyyy")}
                                                         </div>
-                                                        <span className="text-[9px] text-muted-foreground mt-1">Ref ID: {u.whopUserId.slice(0, 8)}...</span>
+                                                        <span className="text-[9px] text-muted-foreground mt-1">ID: {u.whopUserId.slice(0, 8)}...</span>
                                                     </div>
                                                 </td>
                                             </tr>

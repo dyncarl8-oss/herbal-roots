@@ -53,16 +53,16 @@ export default function AdminModeration() {
     }, []);
 
     const handleDeletePost = async (postId: string) => {
-        if (!confirm("Are you sure you want to prune this ritual? This action is permanent.")) return;
+        if (!confirm("Are you sure you want to delete this post? This action is permanent.")) return;
 
         try {
             const res = await fetch(`/api/admin/posts/${postId}`, { method: "DELETE" });
             if (res.ok) {
-                toast({ title: "Ritual Pruned", description: "The content has been removed from the Sanctuary." });
+                toast({ title: "Post Deleted", description: "The content has been removed from the community." });
                 setPosts(prev => prev.filter(p => p._id !== postId));
             }
         } catch (err) {
-            toast({ title: "Moderation Failed", description: "Could not remove post.", variant: "destructive" });
+            toast({ title: "Error", description: "Could not remove post.", variant: "destructive" });
         }
     };
 
@@ -75,7 +75,7 @@ export default function AdminModeration() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
                 <Loader2 className="w-12 h-12 animate-spin text-primary opacity-50" />
-                <p className="mt-4 text-primary font-serif italic">Reviewing the Sanctuary...</p>
+                <p className="mt-4 text-primary font-serif italic">Loading posts...</p>
             </div>
         );
     }
@@ -85,13 +85,13 @@ export default function AdminModeration() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-4xl font-serif font-bold text-primary">Sanctuary Sentinel</h1>
-                    <p className="text-muted-foreground italic">Guarding the quality and sacredness of community rituals.</p>
+                    <h1 className="text-4xl font-serif font-bold text-primary">Content Moderation</h1>
+                    <p className="text-muted-foreground italic">Manage and review community posts.</p>
                 </div>
                 <div className="relative w-full md:w-72">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
                     <Input
-                        placeholder="Scan ritual content..."
+                        placeholder="Search posts..."
                         className="pl-10 h-10 rounded-full bg-white/50 border-white/20 shadow-inner"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -106,7 +106,7 @@ export default function AdminModeration() {
                             <MessageSquare size={24} />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Rituals</p>
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Posts</p>
                             <h3 className="text-2xl font-bold text-primary">{posts.length}</h3>
                         </div>
                     </CardContent>
@@ -118,7 +118,7 @@ export default function AdminModeration() {
                             <Users size={24} />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Active Seekers</p>
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Members Posting</p>
                             <h3 className="text-2xl font-bold text-primary">{Array.from(new Set(posts.map(p => p.authorName))).length}</h3>
                         </div>
                     </CardContent>
@@ -130,7 +130,7 @@ export default function AdminModeration() {
                             <ShieldCheck size={24} />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Shield Status</p>
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">System Status</p>
                             <h3 className="text-lg font-bold text-amber-600 uppercase">Active</h3>
                         </div>
                     </CardContent>
@@ -141,8 +141,8 @@ export default function AdminModeration() {
                 <CardHeader className="border-b border-primary/5 bg-white/20 p-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <CardTitle className="font-serif text-2xl">Ritual Surveillance</CardTitle>
-                            <CardDescription>Real-time feed of all community interactions.</CardDescription>
+                            <CardTitle className="font-serif text-2xl">Community Posts</CardTitle>
+                            <CardDescription>View and manage all recent contributions.</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
@@ -151,17 +151,17 @@ export default function AdminModeration() {
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-primary/5 text-left text-[10px] uppercase tracking-widest text-muted-foreground bg-primary/5">
-                                    <th className="px-6 py-4 font-bold">Author Identity</th>
-                                    <th className="px-6 py-4 font-bold">Shared Ritual</th>
-                                    <th className="px-6 py-4 font-bold">Time Seed</th>
-                                    <th className="px-6 py-4 font-bold text-right">Sanctuary Actions</th>
+                                    <th className="px-6 py-4 font-bold">Member</th>
+                                    <th className="px-6 py-4 font-bold">Content</th>
+                                    <th className="px-6 py-4 font-bold">Date</th>
+                                    <th className="px-6 py-4 font-bold text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-primary/5">
                                 {filteredPosts.length === 0 ? (
                                     <tr>
                                         <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground italic opacity-50 font-serif">
-                                            The Sanctuary is quiet. No matching rituals detected.
+                                            No matching posts found.
                                         </td>
                                     </tr>
                                 ) : (
@@ -194,7 +194,7 @@ export default function AdminModeration() {
                                                     onClick={() => handleDeletePost(post._id)}
                                                 >
                                                     <Trash2 size={14} />
-                                                    <span className="text-[10px] font-bold uppercase tracking-tighter">Prune Ritual</span>
+                                                    <span className="text-[10px] font-bold uppercase tracking-tighter">Delete</span>
                                                 </Button>
                                             </td>
                                         </tr>

@@ -76,9 +76,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   ];
 
   const adminNavItems = [
-    { href: "/admin", label: "Command Center", icon: ShieldCheck },
+    { href: "/admin", label: "Admin Dashboard", icon: ShieldCheck },
     { href: "/admin/moderation", label: "Moderation", icon: Users },
-    { href: "/admin/members", label: "Member Audit", icon: DollarSign },
+    { href: "/admin/members", label: "Audit & Sales", icon: DollarSign },
   ];
 
   const navItems = isAdminMode ? adminNavItems : memberNavItems;
