@@ -52,18 +52,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [location, setLocation] = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { user, loading } = useUser();
-  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
+  const [hasCheckedInitialRedirect, setHasCheckedInitialRedirect] = useState(false);
 
-  // Sync isAdminMode and handle initial redirect as early as possible
+  // Sync isAdminMode carefully on first load
   useEffect(() => {
-    if (user?.accessLevel === 'admin') {
+    if (!loading && user?.accessLevel === 'admin' && !hasCheckedInitialRedirect) {
       setIsAdminMode(true);
-      // If we are at root and confirmed admin, push to admin dashboard immediately
+      // Auto-redirect to admin if landing at root for the first time
       if (location === "/") {
         setLocation("/admin");
       }
+      setHasCheckedInitialRedirect(true);
     }
-  }, [user, location, setLocation]);
+  }, [user, loading, location, setLocation, hasCheckedInitialRedirect]);
 
   const memberNavItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -214,6 +216,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <Loader2 className="w-12 h-12 animate-spin text-primary/50" />
+        <p className="mt-4 text-primary/60 font-serif italic tracking-wide">Aligning your portal...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden font-sans text-foreground">
       {/* Background Texture Overlay */}
@@ -258,10 +269,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Content */}
       <main className="relative z-0 md:ml-64 min-h-screen pt-16 md:pt-0 transition-all duration-300">
         <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
-          {/* Prevent flashing member content for admins who should be redirected */}
-          {user?.accessLevel === 'admin' && location === "/" ? (
+          {/* Prevent flashing member content for admins who should be/are being redirected */}
+          {(user?.accessLevel === 'admin' && location === "/" && isAdminMode) ? (
             <div className="flex items-center justify-center min-h-[60vh]">
-              <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
+              <div className="text-center space-y-4">
+                <Loader2 className="w-10 h-10 animate-spin text-primary opacity-30 mx-auto" />
+                <p className="text-primary/40 font-serif italic text-sm">Entering Admin Dashboard...</p>
+              </div>
             </div>
           ) : (
             children
